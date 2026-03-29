@@ -1,0 +1,13 @@
+# Testing
+phpunit.phar
+test_manual.php
+.phpunit.result.cache
+
+# Development tools & config
+vendor/
+node_modules/
+.env
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
