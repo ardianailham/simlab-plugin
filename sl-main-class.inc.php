@@ -50,6 +50,6 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
         $templine = '';
       }
     }
-    do_action('admin_notices', _e('Table is imported successfully'));
+    do_action('admin_notices', __('Table is imported successfully'));
   }
 }
