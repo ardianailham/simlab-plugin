@@ -159,6 +159,27 @@ if (!is_user_logged_in()) {
       }
     }
 
+    /* ── Handle POST: Import alat ────────────────────────────────────── */
+    if (isset($_POST['import-alat']) && check_admin_referer('sl_import_alat')) {
+        global $simlab_export_import;
+        $count = $simlab_export_import->importAlat($_FILES['file_csv']);
+        if ($count !== false) {
+?>
+          <script type="text/javascript">
+            alert('<?= $count; ?> Data Berhasil Diimport');
+            document.location = '?page=<?= esc_js($obj->plugin_slug . $obj->menu_slug); ?>';
+          </script>
+<?php
+        } else {
+?>
+          <script type="text/javascript">
+            alert('Data Gagal Diimport. Pastikan file benar.');
+            history.back();
+          </script>
+<?php
+        }
+    }
+
     /* ── Handle POST: Add alat ───────────────────────────────────────── */
     if (isset($_POST['submit-alat']) && check_admin_referer('sl_simlab_alat_action')) {
       if (empty($_POST['Nama_Alat']) || empty($_POST['Qty'])) {
@@ -203,8 +224,19 @@ if (!is_user_logged_in()) {
 
         <?php if (current_user_can('manage_options')) { ?>
           <div class="row mb-3">
-            <div class="col-lg-12">
+            <div class="col-lg-12 d-flex gap-2 align-items-center">
               <button id="tambah-alat-button" class="btn btn-primary" onclick="return tambahAlat()">Tambah Alat</button>
+              <a href="<?= wp_nonce_url(admin_url('admin.php?page=' . $obj->plugin_slug . $obj->menu_slug . '&action=export-alat'), 'sl_export_alat'); ?>" class="btn btn-success">Export CSV</a>
+              <button class="btn btn-info text-white" onclick="return toggleImport()">Import CSV</button>
+
+              <div class="import-alat" id="import-alat" style="display:none;">
+                <form method="post" enctype="multipart/form-data" class="d-flex gap-2 align-items-center">
+                  <?php wp_nonce_field('sl_import_alat', '_wpnonce'); ?>
+                  <input type="file" name="file_csv" class="form-control" accept=".csv" required>
+                  <button type="submit" name="import-alat" class="btn btn-info text-white">Upload</button>
+                </form>
+              </div>
+
               <div class="tambah-alat" id="tambah-alat">
                 <form method="post" class="mt-3">
                   <?php wp_nonce_field('sl_simlab_alat_action', '_wpnonce'); ?>
@@ -281,10 +313,24 @@ if (!is_user_logged_in()) {
     <script type="text/javascript">
       function tambahAlat() {
         var tambahAlat = document.getElementById('tambah-alat');
+        var importAlat = document.getElementById('import-alat');
+        importAlat.style.display = 'none';
         if (tambahAlat.style.display === 'block') {
           tambahAlat.style.display = 'none';
         } else {
           tambahAlat.style.display = 'block';
+        }
+        return false;
+      }
+
+      function toggleImport() {
+        var importAlat = document.getElementById('import-alat');
+        var tambahAlat = document.getElementById('tambah-alat');
+        tambahAlat.style.display = 'none';
+        if (importAlat.style.display === 'block') {
+          importAlat.style.display = 'none';
+        } else {
+          importAlat.style.display = 'block';
         }
         return false;
       }

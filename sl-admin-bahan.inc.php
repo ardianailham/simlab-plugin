@@ -174,6 +174,27 @@ if (!is_user_logged_in()) {
       }
     }
 
+    /* ── Handle POST: Import bahan ────────────────────────────────────── */
+    if (isset($_POST['import-bahan']) && check_admin_referer('sl_import_bahan')) {
+        global $simlab_export_import;
+        $count = $simlab_export_import->importBahan($_FILES['file_csv']);
+        if ($count !== false) {
+?>
+          <script type="text/javascript">
+            alert('<?= $count; ?> Data Berhasil Diimport');
+            document.location = '?page=<?= esc_js($obj->plugin_slug . $obj->menu_slug); ?>';
+          </script>
+<?php
+        } else {
+?>
+          <script type="text/javascript">
+            alert('Data Gagal Diimport. Pastikan file benar.');
+            history.back();
+          </script>
+<?php
+        }
+    }
+
     /* ── Handle POST: Add bahan ──────────────────────────────────────── */
     if (isset($_POST['submit-bahan']) && check_admin_referer('sl_simlab_bahan_action')) {
       if (empty($_POST['Nama_Bahan']) || !isset($_POST['Jumlah'])) {
@@ -218,8 +239,19 @@ if (!is_user_logged_in()) {
 
         <?php if (current_user_can('manage_options')) { ?>
           <div class="row mb-3">
-            <div class="col-lg-12">
+            <div class="col-lg-12 d-flex gap-2 align-items-center">
               <button id="tambah-bahan-button" class="btn btn-primary" onclick="return tambahBahan()">Tambah Bahan</button>
+              <a href="<?= wp_nonce_url(admin_url('admin.php?page=' . $obj->plugin_slug . $obj->menu_slug . '&action=export-bahan'), 'sl_export_bahan'); ?>" class="btn btn-success">Export CSV</a>
+              <button class="btn btn-info text-white" onclick="return toggleImport()">Import CSV</button>
+
+              <div class="import-bahan" id="import-bahan" style="display:none;">
+                <form method="post" enctype="multipart/form-data" class="d-flex gap-2 align-items-center">
+                  <?php wp_nonce_field('sl_import_bahan', '_wpnonce'); ?>
+                  <input type="file" name="file_csv" class="form-control" accept=".csv" required>
+                  <button type="submit" name="import-bahan" class="btn btn-info text-white">Upload</button>
+                </form>
+              </div>
+
               <div class="tambah-bahan" id="tambah-bahan">
                 <form method="post" class="mt-3">
                   <?php wp_nonce_field('sl_simlab_bahan_action', '_wpnonce'); ?>
@@ -314,10 +346,24 @@ if (!is_user_logged_in()) {
     <script type="text/javascript">
       function tambahBahan() {
         var tambahBahan = document.getElementById('tambah-bahan');
+        var importBahan = document.getElementById('import-bahan');
+        importBahan.style.display = 'none';
         if (tambahBahan.style.display === 'block') {
           tambahBahan.style.display = 'none';
         } else {
           tambahBahan.style.display = 'block';
+        }
+        return false;
+      }
+
+      function toggleImport() {
+        var importBahan = document.getElementById('import-bahan');
+        var tambahBahan = document.getElementById('tambah-bahan');
+        tambahBahan.style.display = 'none';
+        if (importBahan.style.display === 'block') {
+          importBahan.style.display = 'none';
+        } else {
+          importBahan.style.display = 'block';
         }
         return false;
       }
