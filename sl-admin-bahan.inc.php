@@ -30,7 +30,7 @@ if (!is_user_logged_in()) {
           <p class="card-text"><?= esc_html($data['Serial']); ?></p>
           <p class="card-text"><?= esc_html($data['Exp']); ?></p>
           <p class="card-text"><?= esc_html($data['Letak']); ?></p>
-          <button onclick="document.location = 'admin.php?page=<?= $obj->plugin_slug . $obj->menu_slug; ?>';" class="card-link">Back</button>
+          <button onclick="document.location = '?page=<?= $obj->plugin_slug . $obj->menu_slug; ?>';" class="card-link">Back</button>
 
         </div>
       </div>
@@ -59,7 +59,7 @@ if (!is_user_logged_in()) {
         </div>
         <div class="mb-3">
           <label for="Jumlah">Jumlah</label>
-          <input type="number" step="0.00001" class="form-control" min="0.00001" max="<?= esc_attr($data['Jumlah']); ?>" value="0.00001" id="Qty" name="Qty">
+          <input type="number" step="any" class="form-control" min="0" max="<?= esc_attr($data['Jumlah']); ?>" value="1" id="Qty" name="Qty">
         </div>
         <div class="mb-3">
           <label for="tanggal">Tanggal</label>
@@ -69,7 +69,7 @@ if (!is_user_logged_in()) {
 
         <button type="submit" class="btn btn-primary submit" id="submit-log-bahan" name="submit-log-bahan">Book</button>
       </form>
-      <button class="btn btn-primary submit card-link" onclick="document.location = 'admin.php?page=<?= $obj->plugin_slug . $obj->menu_slug; ?>';">Back</button>
+      <button class="btn btn-primary submit card-link" onclick="document.location = '?page=<?= $obj->plugin_slug . $obj->menu_slug; ?>';">Back</button>
     </div>
   <?php
   } elseif (isset($_GET['ubah-bahan'])) {
@@ -91,7 +91,7 @@ if (!is_user_logged_in()) {
               </div>
               <div class="mb-3">
                 <label for="jumlah" class="form-label">Jumlah</label>
-                <input type="number" step="0.00001" class="form-control" min="0.00001" value="<?= esc_attr($data['Jumlah']); ?>" id="Qty" name="Qty">
+                <input type="number" step="any" class="form-control" min="0" value="<?= esc_attr($data['Jumlah']); ?>" id="Qty" name="Qty">
               </div>
               <div class="mb-3">
                 <label for="satuan" class="form-label">Satuan</label>
@@ -125,7 +125,7 @@ if (!is_user_logged_in()) {
         ?>
           <script type="text/javascript">
             alert('Data Berhasil Dihapus');
-            document.location = 'admin.php?page=<?= $obj->plugin_slug . $obj->menu_slug; ?>';
+            document.location = '?page=<?= $obj->plugin_slug . $obj->menu_slug; ?>';
           </script>
         <?php } else {
         ?>
@@ -155,7 +155,7 @@ if (!is_user_logged_in()) {
                   </div>
                   <div class="mb-3">
                     <label for="jumlah" class="form-label">Jumlah</label>
-                    <input type="number" class="form-control" id="jumlah" name="Jumlah" min="0.00001">
+                    <input type="number" step="any" class="form-control" id="jumlah" name="Jumlah" min="0">
                   </div>
                   <div class="mb-3">
                     <label for="satuan" class="form-label">Satuan</label>
@@ -201,11 +201,11 @@ if (!is_user_logged_in()) {
                     <td><?= esc_html($alat['Letak']); ?></td>
                     <td>
                       <?php if (current_user_can('manage_options')) { ?>
-                        <a href="admin.php?page=<?= $obj->plugin_slug . $obj->menu_slug ?>&hapus-bahan&id=<?= $alat['id']; ?>" class="badge text-bg-danger float-end ms-1" onclick="return confirm('yakin?');">Hapus</a>
-                        <a href="admin.php?page=<?= $obj->plugin_slug . $obj->menu_slug ?>&ubah-bahan&id=<?= $alat['id']; ?>" class="badge text-bg-warning float-end ms-1">Ubah</a>
+                        <a href="?page=<?= $obj->plugin_slug . $obj->menu_slug ?>&hapus-bahan&id=<?= $alat['id']; ?>" class="badge text-bg-danger float-end ms-1" onclick="return confirm('yakin?');">Hapus</a>
+                        <a href="?page=<?= $obj->plugin_slug . $obj->menu_slug ?>&ubah-bahan&id=<?= $alat['id']; ?>" class="badge text-bg-warning float-end ms-1">Ubah</a>
                       <?php }; ?>
-                      <a href="admin.php?page=<?= $obj->plugin_slug . $obj->menu_slug ?>&detail-bahan&id=<?= $alat['id']; ?>" class="badge text-bg-primary float-end ms-1">Detail</a>
-                      <a href="admin.php?page=<?= $obj->plugin_slug . $obj->menu_slug ?>&addlog-bahan&id=<?= $alat['id']; ?>" class="badge text-bg-success float-end ms-1">Book!</a>
+                      <a href="?page=<?= $obj->plugin_slug . $obj->menu_slug ?>&detail-bahan&id=<?= $alat['id']; ?>" class="badge text-bg-primary float-end ms-1">Detail</a>
+                      <a href="?page=<?= $obj->plugin_slug . $obj->menu_slug ?>&addlog-bahan&id=<?= $alat['id']; ?>" class="badge text-bg-success float-end ms-1">Book!</a>
 
                     </td>
                   </tr>
@@ -254,7 +254,7 @@ if (!is_user_logged_in()) {
           $obj->tambahBahan($_POST);
         ?>
           <script type="text/javascript">
-            document.location = 'admin.php?page=<?= $obj->plugin_slug . $obj->menu_slug; ?>';
+            document.location = '?page=<?= $obj->plugin_slug . $obj->menu_slug; ?>';
           </script>
         <?php
         }

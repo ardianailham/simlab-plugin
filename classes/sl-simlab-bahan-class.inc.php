@@ -38,9 +38,8 @@ class SL_SIMLAB_BahanClass extends SL_SimlabPlugin
   {
     $table = $this->db->prefix . $this->table;
     $values = array(
-      'id' => '',
       'Nama_Bahan' => $data['Nama_Bahan'],
-      'Jumlah' => $data['Jumlah'],
+      'Jumlah' => str_replace(',', '.', $data['Jumlah']),
       'Satuan' => $data['Satuan'],
       'Merk' => $data['Merk'],
       'Serial' => $data['Serial'],
@@ -56,7 +55,7 @@ class SL_SIMLAB_BahanClass extends SL_SimlabPlugin
     $table = $this->db->prefix . $this->table;
     $value = array(
       "Nama_Bahan" => $data['Nama_Bahan'],
-      "Jumlah" => $data["Qty"],
+      "Jumlah" => str_replace(',', '.', $data["Qty"]),
       "Satuan" => $data['Satuan'],
       "Merk" => $data['Merk'],
       "Serial" => $data["Serial"],
@@ -83,7 +82,7 @@ class SL_SIMLAB_BahanClass extends SL_SimlabPlugin
     $table = $this->db->prefix . $this->table;
     $Jumlah = $Stok - $ambil;
     $query = $this->db->prepare('UPDATE ' . $table . ' SET
-    Jumlah = %d WHERE id = %d', $Jumlah, $id);
+    Jumlah = %f WHERE id = %d', $Jumlah, $id);
     $results = $this->db->query($query);
     return $results;
   }

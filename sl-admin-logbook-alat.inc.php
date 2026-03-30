@@ -11,7 +11,7 @@ if (isset($_GET['hapus'])) {
 ?>
     <script type="text/javascript">
       alert('Data Berhasil Dihapus');
-      document.location = 'admin.php?page=<?= $obj->plugin_slug . $obj->menu_slug; ?>';
+      document.location = '?page=<?= $obj->plugin_slug . $obj->menu_slug; ?>';
     </script>
   <?php } else {
   ?>
@@ -35,7 +35,7 @@ if (isset($_GET['hapus'])) {
         <p class="card-text"><?= esc_html($data['qty']); ?></p>
         <p class="card-text"><?= esc_html(date("Y-m-d H:i", $data['start_date'])); ?> - <?= esc_html(date("Y-m-d H:i", $data['end_date'])); ?></p>
         <p class="card-text"><?= esc_html($data['name']); ?></p>
-        <button class="card-link" onclick="document.location = 'admin.php?page=<?= $obj->plugin_slug . $obj->menu_slug; ?>';">Back</button>
+        <button class="card-link" onclick="document.location = '?page=<?= $obj->plugin_slug . $obj->menu_slug; ?>';">Back</button>
 
       </div>
     </div>
@@ -76,8 +76,8 @@ if (isset($_GET['hapus'])) {
               <td><?= esc_html($booking['name']); ?></td>
               <td>
                 <?php if (current_user_can('manage_options')) { ?>
-                  <a href="admin.php?page=<?= $obj->plugin_slug . $obj->menu_slug; ?>&hapus&id=<?= $booking['id']; ?>" class="badge text-bg-danger float-end ms-1" onclick="return confirm('Yakin?');">Hapus</a>
-                  <a href="admin.php?page=<?= $obj->plugin_slug . $obj->menu_slug; ?>&detail&id=<?= $booking['id']; ?>" class="badge text-bg-primary float-end ms-1">Detail</a>
+                  <a href="?page=<?= $obj->plugin_slug . $obj->menu_slug; ?>&hapus&id=<?= $booking['id']; ?>" class="badge text-bg-danger float-end ms-1" onclick="return confirm('Yakin?');">Hapus</a>
+                  <a href="?page=<?= $obj->plugin_slug . $obj->menu_slug; ?>&detail&id=<?= $booking['id']; ?>" class="badge text-bg-primary float-end ms-1">Detail</a>
                 <?php } ?>
               </td>
             </tr>
