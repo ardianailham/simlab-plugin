@@ -24,10 +24,10 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `wp_sl_simlab_alat`
+-- Table structure for table `{wp_prefix}sl_simlab_alat`
 --
 
-CREATE TABLE `wp_sl_simlab_alat` (
+CREATE TABLE `{wp_prefix}sl_simlab_alat` (
   `id` int(11) NOT NULL,
   `Nama_Alat` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `Merk` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -37,10 +37,10 @@ CREATE TABLE `wp_sl_simlab_alat` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `wp_sl_simlab_bahan`
+-- Table structure for table `{wp_prefix}sl_simlab_bahan`
 --
 
-CREATE TABLE `wp_sl_simlab_bahan` (
+CREATE TABLE `{wp_prefix}sl_simlab_bahan` (
   `id` int(11) NOT NULL,
   `Nama_Bahan` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,
   `Jumlah` decimal(10,5) NOT NULL,
@@ -54,10 +54,10 @@ CREATE TABLE `wp_sl_simlab_bahan` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `wp_sl_simlab_logbook_alat`
+-- Table structure for table `{wp_prefix}sl_simlab_logbook_alat`
 --
 
-CREATE TABLE `wp_sl_simlab_logbook_alat` (
+CREATE TABLE `{wp_prefix}sl_simlab_logbook_alat` (
   `id` int(11) NOT NULL,
   `id_alat` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
@@ -70,10 +70,10 @@ CREATE TABLE `wp_sl_simlab_logbook_alat` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `wp_sl_simlab_logbook_bahan`
+-- Table structure for table `{wp_prefix}sl_simlab_logbook_bahan`
 --
 
-CREATE TABLE `wp_sl_simlab_logbook_bahan` (
+CREATE TABLE `{wp_prefix}sl_simlab_logbook_bahan` (
   `id` int(11) NOT NULL,
   `id_bahan` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
@@ -84,19 +84,19 @@ CREATE TABLE `wp_sl_simlab_logbook_bahan` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `wp_sl_simlab_status`
+-- Table structure for table `{wp_prefix}sl_simlab_status`
 --
 
-CREATE TABLE `wp_sl_simlab_status` (
+CREATE TABLE `{wp_prefix}sl_simlab_status` (
   `id` int(11) NOT NULL,
   `name` varchar(11) COLLATE utf8mb4_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `wp_sl_simlab_status`
+-- Dumping data for table `{wp_prefix}sl_simlab_status`
 --
 
-INSERT INTO `wp_sl_simlab_status` (`id`, `name`) VALUES
+INSERT INTO `{wp_prefix}sl_simlab_status` (`id`, `name`) VALUES
 (1, 'Ongoing'),
 (2, 'Completed'),
 (3, 'Pending'),
@@ -108,38 +108,38 @@ INSERT INTO `wp_sl_simlab_status` (`id`, `name`) VALUES
 --
 
 --
--- Indexes for table `wp_sl_simlab_alat`
+-- Indexes for table `{wp_prefix}sl_simlab_alat`
 --
-ALTER TABLE `wp_sl_simlab_alat`
+ALTER TABLE `{wp_prefix}sl_simlab_alat`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `wp_sl_simlab_bahan`
+-- Indexes for table `{wp_prefix}sl_simlab_bahan`
 --
-ALTER TABLE `wp_sl_simlab_bahan`
+ALTER TABLE `{wp_prefix}sl_simlab_bahan`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `wp_sl_simlab_logbook_alat`
+-- Indexes for table `{wp_prefix}sl_simlab_logbook_alat`
 --
-ALTER TABLE `wp_sl_simlab_logbook_alat`
+ALTER TABLE `{wp_prefix}sl_simlab_logbook_alat`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`),
   ADD KEY `status` (`status`),
   ADD KEY `id_alat` (`id_alat`);
 
 --
--- Indexes for table `wp_sl_simlab_logbook_bahan`
+-- Indexes for table `{wp_prefix}sl_simlab_logbook_bahan`
 --
-ALTER TABLE `wp_sl_simlab_logbook_bahan`
+ALTER TABLE `{wp_prefix}sl_simlab_logbook_bahan`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`),
   ADD KEY `id_alat` (`id_bahan`);
 
 --
--- Indexes for table `wp_sl_simlab_status`
+-- Indexes for table `{wp_prefix}sl_simlab_status`
 --
-ALTER TABLE `wp_sl_simlab_status`
+ALTER TABLE `{wp_prefix}sl_simlab_status`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -147,33 +147,33 @@ ALTER TABLE `wp_sl_simlab_status`
 --
 
 --
--- AUTO_INCREMENT for table `wp_sl_simlab_alat`
+-- AUTO_INCREMENT for table `{wp_prefix}sl_simlab_alat`
 --
-ALTER TABLE `wp_sl_simlab_alat`
+ALTER TABLE `{wp_prefix}sl_simlab_alat`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `wp_sl_simlab_bahan`
+-- AUTO_INCREMENT for table `{wp_prefix}sl_simlab_bahan`
 --
-ALTER TABLE `wp_sl_simlab_bahan`
+ALTER TABLE `{wp_prefix}sl_simlab_bahan`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `wp_sl_simlab_logbook_alat`
+-- AUTO_INCREMENT for table `{wp_prefix}sl_simlab_logbook_alat`
 --
-ALTER TABLE `wp_sl_simlab_logbook_alat`
+ALTER TABLE `{wp_prefix}sl_simlab_logbook_alat`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `wp_sl_simlab_logbook_bahan`
+-- AUTO_INCREMENT for table `{wp_prefix}sl_simlab_logbook_bahan`
 --
-ALTER TABLE `wp_sl_simlab_logbook_bahan`
+ALTER TABLE `{wp_prefix}sl_simlab_logbook_bahan`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `wp_sl_simlab_status`
+-- AUTO_INCREMENT for table `{wp_prefix}sl_simlab_status`
 --
-ALTER TABLE `wp_sl_simlab_status`
+ALTER TABLE `{wp_prefix}sl_simlab_status`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 COMMIT;
 
