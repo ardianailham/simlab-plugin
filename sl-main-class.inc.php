@@ -115,5 +115,71 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
         )
       );
     }
+
+    // --- Auto-create frontend pages ---
+    $this->_create_pages();
+  }
+
+  /**
+   * Create (or locate) the 4 SIMLAB frontend pages and persist their URLs
+   * in the sl_simlab_links option so Settings & fixed buttons work out of the box.
+   */
+  private function _create_pages()
+  {
+    $pages = [
+      'daftar-alat'        => ['title' => 'Daftar Alat',        'shortcode' => '[daftar-alat]'],
+      'daftar-bahan'       => ['title' => 'Daftar Bahan',       'shortcode' => '[daftar-bahan]'],
+      'logbook-alat'       => ['title' => 'Logbook Alat',       'shortcode' => '[daftar-logbook-alat]'],
+      'logbook-bahan'      => ['title' => 'Logbook Bahan',      'shortcode' => '[daftar-logbook-bahan]'],
+    ];
+
+    $links = get_option('sl_simlab_links', []);
+
+    foreach ($pages as $key => $info) {
+      // Skip if we already have a valid URL saved for this key
+      if (!empty($links[$key])) {
+        continue;
+      }
+
+      // Check if a published page with this title already exists
+      $existing = get_posts([
+        'post_type'      => 'page',
+        'post_status'    => 'publish',
+        'posts_per_page' => 1,
+        'title'          => $info['title'],
+      ]);
+
+      if (!empty($existing)) {
+        $page_id = $existing[0]->ID;
+      } else {
+        // Create a fresh page
+        $page_id = wp_insert_post([
+          'post_title'     => $info['title'],
+          'post_name'      => $key,
+          'post_content'   => $info['shortcode'],
+          'post_status'    => 'publish',
+          'post_type'      => 'page',
+          'comment_status' => 'closed',
+          'ping_status'    => 'closed',
+          'page_template'  => 'sl_simlab_default.php',
+        ]);
+
+        if (is_wp_error($page_id)) {
+          continue;
+        }
+
+        // Assign the SIMLAB template to the new page
+        update_post_meta($page_id, '_wp_page_template', 'sl_simlab_default.php');
+      }
+
+      $links[$key] = get_permalink($page_id);
+    }
+
+    // Persist the collected links
+    if (get_option('sl_simlab_links') !== false) {
+      update_option('sl_simlab_links', $links);
+    } else {
+      add_option('sl_simlab_links', $links);
+    }
   }
 }
