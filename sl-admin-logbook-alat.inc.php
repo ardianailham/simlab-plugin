@@ -147,11 +147,11 @@ if (isset($_GET['hapus'])) {
               <td>
                 <div class="d-flex justify-content-center gap-1">
                   <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&detail&id=<?= intval($booking['id']); ?>"
-                      class="btn btn-sm btn-outline-primary" title="Detail"><i class="fa fa-eye"></i></a>
+                      class="btn btn-sm btn-outline-primary" title="Detail"><i class="fa fa-eye"></i> Detail</a>
                   <?php if (SL_SIMLAB_Auth::can_delete_log($user_id, $booking['user_id'])) { ?>
                     <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&hapus&id=<?= intval($booking['id']); ?>"
                         class="btn btn-sm btn-outline-danger"
-                        onclick="return confirm('Hapus logbook ini?');" title="Hapus"><i class="fa fa-trash"></i></a>
+                        onclick="return confirm('Hapus logbook ini?');" title="Hapus"><i class="fa fa-trash"></i> Delete</a>
                   <?php } ?>
                 </div>
               </td>
