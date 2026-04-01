@@ -1,0 +1,97 @@
+name: Plugin Compatibility Tests
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    branches:
+      - master
+      - main
+
+jobs:
+  # ─────────────────────────────────────────────
+  # JOB 1: PHP Lint (Syntax Check Only, No DB)
+  # ─────────────────────────────────────────────
+  php-lint:
+    name: PHP Lint (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.0', '8.1', '8.2', '8.3']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: none
+          coverage: none
+
+      - name: Check PHP syntax on all plugin files
+        run: |
+          find . -name "*.php" \
+            ! -path "./.git/*" \
+            ! -path "./tests/*" \
+            ! -path "./vendor/*" \
+            -print0 | xargs -0 -n1 php -l
+
+  # ─────────────────────────────────────────────
+  # JOB 2: WordPress Integration Tests (with DB)
+  # ─────────────────────────────────────────────
+  wp-tests:
+    name: WP ${{ matrix.wp }} / PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.0', '8.1', '8.2', '8.3']
+        wp:
+          - 'latest'
+          - '6.5'
+          - '6.4'
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: wordpress_test
+          MYSQL_USER: wp_user
+          MYSQL_PASSWORD: wp_password
+          MYSQL_ROOT_PASSWORD: root_password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mysqli, mbstring
+          tools: none
+          coverage: none
+
+      - name: Install Subversion (for WP test suite)
+        run: sudo apt-get install -y subversion
+
+      - name: Install WordPress test suite
+        run: |
+          chmod +x bin/install-wp-tests.sh
+          bash bin/install-wp-tests.sh \
+            wordpress_test wp_user wp_password 127.0.0.1 ${{ matrix.wp }}
+
+      - name: Run PHPUnit tests
+        run: php phpunit.phar --configuration phpunit.xml.dist
