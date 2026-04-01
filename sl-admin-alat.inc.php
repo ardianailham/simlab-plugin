@@ -19,19 +19,26 @@ if (!is_user_logged_in()) {
   $obj   = new SL_SIMLAB_AlatClass;
   $nonce = wp_create_nonce('sl_simlab_alat_action');
 
+  SL_SimlabPlugin::admin_header('Manajemen Alat', 'fa-wrench');
+
   /* ── DETAIL ─────────────────────────────────────────────────────────── */
   if (isset($_GET['detail-alat'])) {
     $id   = intval($_GET['id']);
     $data = $obj->getAlatById($id);
 ?>
-    <div class="container mt-3 d-flex justify-content-center">
-      <div class="col-lg-12">
-        <div class="card" style="width: 18rem;">
+    <div class="row d-flex justify-content-center">
+      <div class="col-lg-6">
+        <div class="card shadow-sm">
           <div class="card-body">
-            <h5 class="card-title"><?= esc_html($data['Nama_Alat']); ?></h5>
-            <h6 class="card-subtitle mb-2 text-muted"><?= esc_html($data['Merk']); ?></h6>
-            <p class="card-text"><?= esc_html($data['Qty']); ?></p>
-            <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>" class="btn btn-secondary btn-sm">Back</a>
+            <h5 class="card-title fw-bold text-primary mb-3"><i class="fa fa-info-circle me-2"></i>Detail Alat</h5>
+            <table class="table table-sm">
+              <tr><th width="30%">Nama Alat</th><td>: <?= esc_html($data['Nama_Alat']); ?></td></tr>
+              <tr><th>Merk</th><td>: <?= esc_html($data['Merk']); ?></td></tr>
+              <tr><th>Stok / Qty</th><td>: <span class="badge bg-info"><?= esc_html($data['Qty']); ?> Unit</span></td></tr>
+            </table>
+            <div class="mt-4">
+               <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>" class="btn btn-secondary"><i class="fa fa-arrow-left me-1"></i> Kembali</a>
+            </div>
           </div>
         </div>
       </div>
@@ -43,29 +50,32 @@ if (!is_user_logged_in()) {
     $id   = intval($_GET['id']);
     $data = $obj->getAlatById($id);
 ?>
-    <div class="container mt-3 d-flex justify-content-center">
-      <div class="col-lg-12">
-        <div class="ubah-alat" id="ubah-alat">
-          <form method="post">
-            <?php wp_nonce_field('sl_simlab_alat_action', '_wpnonce'); ?>
-            <input type="hidden" name="id" id="id" value="<?= intval($data['id']); ?>">
-            <div class="mb-3">
-              <label for="nama-alat" class="form-label">Nama Alat</label>
-              <input type="text" class="form-control" id="nama-alat" name="Nama_Alat" value="<?= esc_attr($data['Nama_Alat']); ?>" required>
-            </div>
-            <div class="mb-3">
-              <label for="merk" class="form-label">Merk</label>
-              <input type="text" class="form-control" id="merk" name="Merk" value="<?= esc_attr($data['Merk']); ?>">
-            </div>
-            <div class="mb-3">
-              <label for="Qty" class="form-label">Qty</label>
-              <input type="number" class="form-control" id="Qty" name="Qty" min="1" value="<?= esc_attr($data['Qty']); ?>" required>
-            </div>
-            <div class="d-flex gap-2">
-              <button type="submit" class="btn btn-primary" name="ubah-alat" value="1">Ubah Alat</button>
-              <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>" class="btn btn-secondary">Back</a>
-            </div>
-          </form>
+    <div class="row d-flex justify-content-center">
+      <div class="col-lg-8">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title fw-bold mb-4"><i class="fa fa-edit me-2 text-warning"></i>Ubah Data Alat</h5>
+            <form method="post">
+              <?php wp_nonce_field('sl_simlab_alat_action', '_wpnonce'); ?>
+              <input type="hidden" name="id" value="<?= intval($data['id']); ?>">
+              <div class="mb-3">
+                <label for="nama-alat" class="form-label">Nama Alat</label>
+                <input type="text" class="form-control" id="nama-alat" name="Nama_Alat" value="<?= esc_attr($data['Nama_Alat']); ?>" required>
+              </div>
+              <div class="mb-3">
+                <label for="merk" class="form-label">Merk</label>
+                <input type="text" class="form-control" id="merk" name="Merk" value="<?= esc_attr($data['Merk']); ?>">
+              </div>
+              <div class="mb-3">
+                <label for="Qty" class="form-label">Qty / Stok</label>
+                <input type="number" class="form-control" id="Qty" name="Qty" min="1" value="<?= esc_attr($data['Qty']); ?>" required>
+              </div>
+              <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary" name="ubah-alat" value="1"><i class="fa fa-save me-1"></i> Simpan Perubahan</button>
+                <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>" class="btn btn-secondary">Batal</a>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
@@ -77,38 +87,46 @@ if (!is_user_logged_in()) {
     $data = $obj->getAlatById($id);
     $time = $obj->getTime();
 ?>
-    <div class="container mt-3 d-flex justify-content-center">
-      <div class="col-lg-12">
-        <h3>Booking <?= esc_html($data['Nama_Alat']); ?></h3>
-        <form method="post">
-          <?php wp_nonce_field('sl_simlab_alat_action', '_wpnonce'); ?>
-          <input type="hidden" name="id_alat" id="id_alat" value="<?= intval($data['id']); ?>">
-          <input type="hidden" name="user_id" id="user_id" value="<?= get_current_user_id(); ?>">
-          <div class="mb-3">
-            <label for="nama-alat" class="form-label">Nama Alat</label>
-            <input type="text" class="form-control" id="nama-alat" name="Nama_Alat" value="<?= esc_attr($data['Nama_Alat']); ?>">
+    <div class="row d-flex justify-content-center">
+      <div class="col-lg-8">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title fw-bold mb-4"><i class="fa fa-calendar-plus-o me-2 text-success"></i>Booking: <?= esc_html($data['Nama_Alat']); ?></h5>
+            <form method="post">
+              <?php wp_nonce_field('sl_simlab_alat_action', '_wpnonce'); ?>
+              <input type="hidden" name="id_alat" value="<?= intval($data['id']); ?>">
+              <input type="hidden" name="user_id" value="<?= get_current_user_id(); ?>">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Nama Alat</label>
+                  <input type="text" class="form-control bg-light" value="<?= esc_attr($data['Nama_Alat']); ?>" readonly>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Merk</label>
+                  <input type="text" class="form-control bg-light" value="<?= esc_attr($data['Merk']); ?>" readonly>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="Qty" class="form-label">Jumlah Pinjam (Maks: <?= esc_attr($data['Qty']); ?>)</label>
+                <input type="number" class="form-control" id="Qty" name="Qty" min="1" max="<?= esc_attr($data['Qty']); ?>" value="1">
+              </div>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="start_date" class="form-label">Tanggal Mulai</label>
+                  <input type="datetime-local" class="form-control" id="start_date" name="start_date" value="<?= esc_attr($time[0]); ?>">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="end_date" class="form-label">Tanggal Selesai</label>
+                  <input type="datetime-local" class="form-control" id="end_date" name="end_date" value="<?= esc_attr($time[1]); ?>">
+                </div>
+              </div>
+              <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-success" name="submit-log-alat" value="1"><i class="fa fa-check me-1"></i> Konfirmasi Booking</button>
+                <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>" class="btn btn-secondary">Batal</a>
+              </div>
+            </form>
           </div>
-          <div class="mb-3">
-            <label for="merk" class="form-label">Merk</label>
-            <input type="text" class="form-control" id="merk" name="Merk" value="<?= esc_attr($data['Merk']); ?>">
-          </div>
-          <div class="mb-3">
-            <label for="Qty" class="form-label">Qty</label>
-            <input type="number" class="form-control" id="Qty" name="Qty" min="1" max="<?= esc_attr($data['Qty']); ?>" value="1">
-          </div>
-          <div class="mb-3">
-            <label for="start_date" class="form-label">Start Date</label>
-            <input type="datetime-local" class="form-control" id="start_date" name="start_date" value="<?= esc_attr($time[0]); ?>">
-          </div>
-          <div class="mb-3">
-            <label for="end_date" class="form-label">End Date</label>
-            <input type="datetime-local" class="form-control" id="end_date" name="end_date" value="<?= esc_attr($time[1]); ?>">
-          </div>
-          <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary" name="submit-log-alat" value="1">Book</button>
-            <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>" class="btn btn-secondary">Back</a>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
 
@@ -219,109 +237,116 @@ if (!is_user_logged_in()) {
 
     $data = $obj->getAlat();
 ?>
-    <div class="container mt-3 d-flex justify-content-center">
+    <div class="row">
       <div class="col-lg-12">
 
         <?php if (SL_SIMLAB_Auth::is_admin()) { ?>
-          <div class="row mb-3">
-            <div class="col-lg-12 d-flex gap-2 align-items-center">
-              <button id="tambah-alat-button" class="btn btn-primary" onclick="return tambahAlat()">Tambah Alat</button>
-              <a href="<?= wp_nonce_url(admin_url('admin.php?page=' . $obj->plugin_slug . $obj->menu_slug . '&action=export-alat'), 'sl_export_alat'); ?>" class="btn btn-success">Export CSV</a>
-              <button class="btn btn-info text-white" onclick="return toggleImport()">Import CSV</button>
+          <div class="d-flex flex-wrap gap-2 mb-4 justify-content-between align-items-center">
+            <div class="d-flex gap-2">
+              <button id="tambah-alat-button" class="btn btn-primary shadow-sm" onclick="return tambahAlat()"><i class="fa fa-plus me-1"></i> Tambah Alat</button>
+              <button class="btn btn-info text-white shadow-sm" onclick="return toggleImport()"><i class="fa fa-upload me-1"></i> Import CSV</button>
+              <a href="<?= wp_nonce_url(admin_url('admin.php?page=' . $obj->plugin_slug . $obj->menu_slug . '&action=export-alat'), 'sl_export_alat'); ?>" class="btn btn-success shadow-sm"><i class="fa fa-download me-1"></i> Export CSV</a>
+            </div>
+          </div>
 
-              <div class="import-alat" id="import-alat" style="display:none;">
-                <form method="post" enctype="multipart/form-data" class="d-flex gap-2 align-items-center">
-                  <?php wp_nonce_field('sl_import_alat', '_wpnonce'); ?>
+          <div class="import-alat card mb-4 border-info shadow-sm" id="import-alat" style="display:none; border-left: 5px solid #0dcaf0;">
+            <div class="card-body">
+              <h6 class="fw-bold mb-3">Import Data Alat (.csv)</h6>
+              <form method="post" enctype="multipart/form-data" class="row g-3 align-items-center">
+                <?php wp_nonce_field('sl_import_alat', '_wpnonce'); ?>
+                <div class="col-auto">
                   <input type="file" name="file_csv" class="form-control" accept=".csv" required>
-                  <button type="submit" name="import-alat" class="btn btn-info text-white">Upload</button>
-                </form>
-              </div>
+                </div>
+                <div class="col-auto">
+                  <button type="submit" name="import-alat" class="btn btn-info text-white">Upload & Import</button>
+                  <button type="button" class="btn btn-link text-muted" onclick="toggleImport()">Batal</button>
+                </div>
+              </form>
+            </div>
+          </div>
 
-              <div class="tambah-alat" id="tambah-alat">
-                <form method="post" class="mt-3">
-                  <?php wp_nonce_field('sl_simlab_alat_action', '_wpnonce'); ?>
-                  <input type="hidden" name="id" id="id">
-                  <div class="mb-3">
-                    <label for="nama-alat" class="form-label">Nama Alat</label>
-                    <input type="text" class="form-control" id="nama-alat" name="Nama_Alat" required>
-                  </div>
-                  <div class="mb-3">
-                    <label for="merk" class="form-label">Merk</label>
-                    <input type="text" class="form-control" id="merk" name="Merk">
-                  </div>
-                  <div class="mb-3">
-                    <label for="Qty" class="form-label">Qty</label>
-                    <input type="number" class="form-control" id="Qty" name="Qty" min="1" required>
-                  </div>
-                  <button type="submit" class="btn btn-primary" name="submit-alat" value="1">Submit</button>
-                </form>
-              </div>
+          <div class="tambah-alat card mb-4 border-primary shadow-sm" id="tambah-alat" style="display:none; border-left: 5px solid #0d6efd;">
+            <div class="card-body">
+              <h6 class="fw-bold mb-3">Formulir Tambah Alat Baru</h6>
+              <form method="post" class="row g-3">
+                <?php wp_nonce_field('sl_simlab_alat_action', '_wpnonce'); ?>
+                <div class="col-md-4">
+                  <label class="form-label small fw-bold">Nama Alat</label>
+                  <input type="text" class="form-control" name="Nama_Alat" required placeholder="Contoh: Mikroskop Binokuler">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small fw-bold">Merk</label>
+                  <input type="text" class="form-control" name="Merk" placeholder="Contoh: Olympus">
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label small fw-bold">Qty / Stok</label>
+                  <input type="number" class="form-control" name="Qty" min="1" required value="1">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                  <button type="submit" class="btn btn-primary w-100" name="submit-alat" value="1">Simpan</button>
+                </div>
+              </form>
             </div>
           </div>
         <?php } ?>
 
-        <div class="row">
-          <div class="col-lg-12">
-            <h3 class="mt-3">Daftar Alat</h3>
-            <table class="table table-bordered table-responsive table-striped" cellpadding="10" cellspacing="0">
-              <thead>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle border">
+            <thead class="table-light">
+              <tr>
+                <th width="50">No</th>
+                <th>Nama Alat</th>
+                <th>Merk</th>
+                <th width="100">Jumlah</th>
+                <th width="250" class="text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php $i = 1; ?>
+              <?php if (empty($data)): ?>
+                <tr><td colspan="5" class="text-center py-4 text-muted">Belum ada data alat.</td></tr>
+              <?php endif; ?>
+              <?php foreach ($data as $alat) : ?>
                 <tr>
-                  <th>No</th>
-                  <th>Nama Alat</th>
-                  <th>Merk</th>
-                  <th>Jumlah</th>
-                  <th>Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                <?php $i = 1; ?>
-                <?php foreach ($data as $alat) : ?>
-                  <tr>
-                    <td><?= $i; ?></td>
-                    <td><?= esc_html($alat['Nama_Alat']); ?></td>
-                    <td><?= esc_html($alat['Merk']); ?></td>
-                    <td><?= esc_html($alat['Qty']); ?></td>
-                    <td>
-                      <?php if (SL_SIMLAB_Auth::is_admin()) { ?>
-                        <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&hapus-alat&id=<?= intval($alat['id']); ?>"
-                           class="btn btn-sm btn-danger ms-1"
-                           onclick="return confirm('Are you sure you want to delete this item?');">Delete</a>
-                        <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&ubah-alat&id=<?= intval($alat['id']); ?>"
-                           class="btn btn-sm btn-warning ms-1">Edit</a>
-                      <?php } ?>
+                  <td><?= $i; ?></td>
+                  <td class="fw-bold"><?= esc_html($alat['Nama_Alat']); ?></td>
+                  <td><?= esc_html($alat['Merk']); ?></td>
+                  <td><span class="badge bg-light text-dark border"><?= esc_html($alat['Qty']); ?> Unit</span></td>
+                  <td>
+                    <div class="d-flex justify-content-center gap-1">
                       <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&detail-alat&id=<?= intval($alat['id']); ?>"
-                         class="btn btn-sm btn-primary ms-1">Detail</a>
+                         class="btn btn-sm btn-outline-primary" title="Detail"><i class="fa fa-eye"></i> Detail</a>
+                         
                       <?php if (SL_SIMLAB_Auth::can_book()) { ?>
                         <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&addlog-alat&id=<?= intval($alat['id']); ?>"
-                          class="btn btn-sm btn-success ms-1">Book</a>
+                          class="btn btn-sm btn-success" title="Book"><i class="fa fa-calendar"></i> Book</a>
                       <?php } ?>
-                    </td>
-                  </tr>
-                  <?php $i++; ?>
-                <?php endforeach; ?>
-              </tbody>
-            </table>
-          </div>
+                      
+                      <?php if (SL_SIMLAB_Auth::is_admin()) { ?>
+                        <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&ubah-alat&id=<?= intval($alat['id']); ?>"
+                           class="btn btn-sm btn-warning" title="Edit"><i class="fa fa-pencil"></i> Edit</a>
+                        <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&hapus-alat&id=<?= intval($alat['id']); ?>"
+                           class="btn btn-sm btn-danger"
+                           onclick="return confirm('Apakah Anda yakin ingin menghapus alat ini?');" title="Hapus"><i class="fa fa-trash"></i> Delete</a>
+                      <?php } ?>
+                    </div>
+                  </td>
+                </tr>
+                <?php $i++; ?>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
         </div>
 
       </div>
     </div>
 
-    <style>
-      .tambah-alat {
-        display: none;
-      }
-    </style>
     <script type="text/javascript">
       function tambahAlat() {
         var tambahAlat = document.getElementById('tambah-alat');
         var importAlat = document.getElementById('import-alat');
         importAlat.style.display = 'none';
-        if (tambahAlat.style.display === 'block') {
-          tambahAlat.style.display = 'none';
-        } else {
-          tambahAlat.style.display = 'block';
-        }
+        tambahAlat.style.display = (tambahAlat.style.display === 'block') ? 'none' : 'block';
         return false;
       }
 
@@ -329,16 +354,14 @@ if (!is_user_logged_in()) {
         var importAlat = document.getElementById('import-alat');
         var tambahAlat = document.getElementById('tambah-alat');
         tambahAlat.style.display = 'none';
-        if (importAlat.style.display === 'block') {
-          importAlat.style.display = 'none';
-        } else {
-          importAlat.style.display = 'block';
-        }
+        importAlat.style.display = (importAlat.style.display === 'block') ? 'none' : 'block';
         return false;
       }
     </script>
 
 <?php
   } // end else (list)
+  
+  SL_SimlabPlugin::admin_footer();
 } // end is_user_logged_in
 ?>

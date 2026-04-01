@@ -59,13 +59,13 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
 
     $sql_bahan = "CREATE TABLE `{$p}sl_simlab_bahan` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `Nama_Bahan` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Nama_Bahan` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
   `Jumlah` decimal(10,5) NOT NULL,
-  `Satuan` varchar(3) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `Merk` varchar(11) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `Serial` varchar(11) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `Exp` varchar(11) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `Letak` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Satuan` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Merk` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Serial` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Exp` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Letak` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB {$charset_collate};";
 
@@ -189,5 +189,58 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
     } else {
       add_option('sl_simlab_links', $links);
     }
+  }
+  public static function admin_header($title, $icon = 'fa-dashboard')
+  {
+?>
+    <div class="simlab-admin-wrapper mt-4 px-3">
+      <div class="container-fluid">
+        <div class="row mb-4 align-items-center">
+          <div class="col-md-8">
+            <h1 class="wp-heading-inline m-0" style="font-weight: 700; color: #2c3e50;">
+              <i class="fa <?= $icon ?> text-primary me-2"></i> <?= $title ?>
+            </h1>
+          </div>
+          <div class="col-md-4 text-md-end mt-2 mt-md-0">
+            <div class="d-inline-flex align-items-center bg-white rounded-pill px-3 py-2 shadow-sm border">
+               <span class="dot bg-success me-2" style="width: 8px; height: 8px; border-radius: 50%;"></span>
+               <small class="text-muted fw-bold">System Online</small>
+               <span class="mx-2 text-muted">|</span>
+               <small class="text-primary fw-bold">v1.0.1</small>
+            </div>
+          </div>
+        </div>
+        <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px; overflow: hidden;">
+          <div class="card-body p-4">
+    <?php
+  }
+
+  public static function admin_footer()
+  {
+    ?>
+          </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center px-1 py-3 mt-2 border-top">
+          <p class="mb-0 text-muted small">&copy; <?= date('Y') ?> <strong>SIMLAB</strong>. Built for excellence in lab management.</p>
+          <div class="social-links d-flex gap-3">
+            <a href="#" class="text-muted"><i class="fa fa-github"></i></a>
+            <a href="#" class="text-muted"><i class="fa fa-globe"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <style>
+      .simlab-admin-wrapper { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+      .bg-primary { background-color: #0d6efd !important; }
+      .text-primary { color: #0d6efd !important; }
+      .simlab-admin-wrapper .card { transition: all 0.3s ease; border-radius: 12px !important; max-width: none !important; width: 100% !important; }
+      .btn-primary { background-color: #0d6efd; border-color: #0d6efd; border-radius: 8px; padding: 10px 20px; font-weight: 600; }
+      .btn-primary:hover { background-color: #0b5ed7; border-color: #0a58ca; }
+      .form-control, .form-select { border-radius: 8px; border: 1px solid #dee2e6; padding: 12px; }
+      .form-control:focus { box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15); border-color: #86b7fe; }
+      .table th { background-color: #f8f9fa; border-bottom-width: 1px; color: #495057; font-weight: 600; }
+      .badge { border-radius: 6px; font-weight: 600; }
+    </style>
+<?php
   }
 }

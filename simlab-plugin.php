@@ -4,6 +4,7 @@
  * Plugin Name: SIMLAB Plugin
  * Description: Plugin for "Sistem Informasi dan Manajemen Laboratorium"
  * Author: Ardiana Ilham Nurrohman
+ * Version: 1.0.1
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -21,6 +22,7 @@ include_once dirname(__FILE__) . '/classes/sl-simlab-bahan-class.inc.php';
 include_once dirname(__FILE__) . '/classes/sl-simlab-logbook-alat-class.inc.php';
 include_once dirname(__FILE__) . '/classes/sl-simlab-logbook-bahan-class.inc.php';
 include_once dirname(__FILE__) . '/classes/sl-simlab-export-import-class.inc.php';
+include_once dirname(__FILE__) . '/classes/sl-simlab-pubchem-class.inc.php';
 $simlab_plugin = new SL_SimlabPlugin;
 $simlab_plugin1 = new SL_SIMLAB_AlatClass;
 $simlab_plugin2 = new SL_SIMLAB_BahanClass;
@@ -39,6 +41,7 @@ add_filter('theme_page_templates', 'sl_template_register', 10, 3);
 add_filter('template_include', 'sl_template_include', 99);
 add_action('wp_footer', array($simlab_plugin, 'simlab_fixed_button'));
 add_action('admin_init', 'sl_simlab_handle_export');
+SL_SIMLAB_PubChemClass::register_ajax();
 
 function sl_simlab_handle_export() {
     global $simlab_export_import;
@@ -76,6 +79,20 @@ function sl_simlab_scripts()
 {
   wp_register_script('sl_simlab_bootstrap_js', SL_SIMLAB_PATH . '/js/bootstrap.js', array('jquery'), '1.0', true);
   wp_enqueue_script('sl_simlab_bootstrap_js');
+
+  // PubChem integration script
+  wp_register_script(
+    'sl_simlab_pubchem_js',
+    SL_SIMLAB_PATH . '/js/sl-simlab-pubchem.js',
+    array('jquery'),
+    '1.0.0',
+    true
+  );
+  wp_enqueue_script('sl_simlab_pubchem_js');
+  wp_localize_script('sl_simlab_pubchem_js', 'sl_simlab_pubchem', array(
+    'ajax_url' => admin_url('admin-ajax.php'),
+    'nonce'    => wp_create_nonce('sl_pubchem_lookup'),
+  ));
 }
 
 // Style

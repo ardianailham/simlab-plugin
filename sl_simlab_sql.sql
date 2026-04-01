@@ -41,14 +41,15 @@ CREATE TABLE `{wp_prefix}sl_simlab_alat` (
 --
 
 CREATE TABLE `{wp_prefix}sl_simlab_bahan` (
-  `id` int(11) NOT NULL,
-  `Nama_Bahan` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `Nama_Bahan` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
   `Jumlah` decimal(10,5) NOT NULL,
-  `Satuan` varchar(3) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `Merk` varchar(11) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `Serial` varchar(11) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `Exp` varchar(11) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `Letak` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL
+  `Satuan` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Merk` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Serial` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Exp` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Letak` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------

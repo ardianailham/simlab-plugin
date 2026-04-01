@@ -6,31 +6,21 @@ $obj     = new SL_SIMLAB_LogbookBahanClass;
 $user    = get_current_user();
 $user_id = get_current_user_id();
 
+SL_SimlabPlugin::admin_header('Logbook Penggunaan Bahan', 'fa-flask');
+
 /* ── DELETE ──────────────────────────────────────────────────────────────── */
 if (isset($_GET['hapus'])) {
   $id      = intval($_GET['id']);
   $logbook = $obj->getLogBahanById($id);
 
-  // Allow delete only if admin OR the booking belongs to the current user
   if (!SL_SIMLAB_Auth::can_delete_log($user_id, $logbook['user_id'])) {
     wp_die(__('You do not have permission to perform this action.'));
   }
 
-  $hapus = $obj->hapusLog($id);
-  if ($hapus > 0) {
-?>
-    <script type="text/javascript">
-      alert('Data Berhasil Dihapus');
-      document.location = '?page=<?= esc_js($obj->plugin_slug . $obj->menu_slug); ?>';
-    </script>
-<?php
+  if ($obj->hapusLog($id) > 0) {
+    echo "<script>alert('Data Berhasil Dihapus'); document.location = '?page=".esc_js($obj->plugin_slug.$obj->menu_slug)."';</script>";
   } else {
-?>
-    <script type="text/javascript">
-      alert('Data Gagal Dihapus');
-      history.back();
-    </script>
-<?php
+    echo "<script>alert('Gagal!'); history.back();</script>";
   }
 
 /* ── DETAIL ──────────────────────────────────────────────────────────────── */
@@ -38,15 +28,20 @@ if (isset($_GET['hapus'])) {
   $id   = intval($_GET['id']);
   $data = $obj->getLogBahanById($id);
 ?>
-  <div class="container mt-3 d-flex justify-content-center">
-    <div class="col-lg-8">
-      <div class="card" style="width: 18rem;">
+  <div class="row d-flex justify-content-center">
+    <div class="col-lg-6">
+      <div class="card shadow-sm">
         <div class="card-body">
-          <h5 class="card-title"><?= esc_html($data['Nama_Bahan']); ?></h5>
-          <h6 class="card-subtitle mb-2 text-muted"><?= esc_html(get_userdata($data['user_id'])->user_nicename); ?></h6>
-          <p class="card-text"><?= esc_html($data['qty'] . ' ' . $data['Satuan']); ?></p>
-          <p class="card-text"><?= esc_html($data['date']); ?></p>
-          <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>" class="btn btn-secondary btn-sm">Back</a>
+          <h5 class="card-title fw-bold text-primary mb-4"><i class="fa fa-info-circle me-2"></i>Detail Penggunaan Bahan</h5>
+          <table class="table table-sm border-0">
+            <tr><th width="40%">Bahan</th><td>: <?= esc_html($data['Nama_Bahan']); ?></td></tr>
+            <tr><th>Pengguna</th><td>: <?= esc_html(get_userdata($data['user_id'])->display_name); ?></td></tr>
+            <tr><th>Jumlah Pakai</th><td>: <?= esc_html($data['qty'] . ' ' . $data['Satuan']); ?></td></tr>
+            <tr><th>Tanggal</th><td>: <?= esc_html($data['date']); ?></td></tr>
+          </table>
+          <div class="mt-4">
+             <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>" class="btn btn-secondary btn-sm">Kembali</a>
+          </div>
         </div>
       </div>
     </div>
@@ -57,46 +52,55 @@ if (isset($_GET['hapus'])) {
 } else {
   $data = $obj->getLogBahan();
 ?>
-  <div class="container mt-3 d-flex justify-content-center">
-    <div class="col-lg-8">
-      <h3 class="mt-3">Logbook Bahan</h3>
-      <table class="table table-bordered table-responsive table-striped" cellpadding="10" cellspacing="0">
-        <thead>
-          <tr>
-            <th>No</th>
-            <th>Nama Bahan</th>
-            <th>Pengguna</th>
-            <th>Jumlah</th>
-            <th>Tanggal</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          <?php $i = 1; ?>
-          <?php foreach ($data as $logbook) : ?>
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle border">
+          <thead class="table-light">
             <tr>
-              <td><?= $i; ?></td>
-              <td><?= esc_html($logbook['Nama_Bahan']); ?></td>
-              <td><?= esc_html(get_userdata($logbook['user_id'])->user_nicename); ?></td>
-              <td><?= esc_html($logbook['qty'] . ' ' . $logbook['Satuan']); ?></td>
-              <td><?= esc_html($logbook['date']); ?></td>
-              <td>
-                <?php if (SL_SIMLAB_Auth::can_delete_log($user_id, $logbook['user_id'])) { ?>
-                  <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&hapus&id=<?= intval($logbook['id']); ?>"
-                     class="btn btn-sm btn-danger ms-1"
-                     onclick="return confirm('Yakin?');">Hapus</a>
-                <?php } ?>
-                <?php if (SL_SIMLAB_Auth::is_admin()) { ?>
-                  <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&detail&id=<?= intval($logbook['id']); ?>"
-                     class="btn btn-sm btn-primary ms-1">Detail</a>
-                <?php } ?>
-              </td>
+              <th width="40">No</th>
+              <th>Nama Bahan</th>
+              <th>Pengguna</th>
+              <th width="120">Jumlah</th>
+              <th>Tanggal</th>
+              <th width="150" class="text-center">Aksi</th>
             </tr>
-            <?php $i++; ?>
-          <?php endforeach; ?>
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            <?php $i = 1; ?>
+            <?php if (empty($data)): ?>
+              <tr><td colspan="6" class="text-center py-4 text-muted">Belum ada riwayat penggunaan bahan.</td></tr>
+            <?php endif; ?>
+            <?php foreach ($data as $logbook) : ?>
+              <tr>
+                <td><?= $i; ?></td>
+                <td class="fw-bold"><?= esc_html($logbook['Nama_Bahan']); ?></td>
+                <td><i class="fa fa-user-circle-o me-1 text-muted"></i> <?= esc_html(get_userdata($logbook['user_id'])->display_name); ?></td>
+                <td><span class="badge bg-light text-dark border"><?= esc_html($logbook['qty'] . ' ' . $logbook['Satuan']); ?></span></td>
+                <td class="small"><?= esc_html($logbook['date']); ?></td>
+                <td>
+                  <div class="d-flex justify-content-center gap-1">
+                    <?php if (SL_SIMLAB_Auth::is_admin()) { ?>
+                      <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&detail&id=<?= intval($logbook['id']); ?>"
+                         class="btn btn-sm btn-outline-primary" title="Detail"><i class="fa fa-eye"></i> Detail</a>
+                    <?php } ?>
+                    <?php if (SL_SIMLAB_Auth::can_delete_log($user_id, $logbook['user_id'])) { ?>
+                      <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&hapus&id=<?= intval($logbook['id']); ?>"
+                         class="btn btn-sm btn-outline-danger"
+                         onclick="return confirm('Hapus riwayat ini?');" title="Hapus"><i class="fa fa-trash"></i> Delete</a>
+                    <?php } ?>
+                  </div>
+                </td>
+              </tr>
+              <?php $i++; ?>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
-<?php } ?>
+<?php 
+} 
+SL_SimlabPlugin::admin_footer();
+?>

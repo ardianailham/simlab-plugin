@@ -38,13 +38,13 @@ class SL_SIMLAB_BahanClass extends SL_SimlabPlugin
   {
     $table = $this->db->prefix . $this->table;
     $values = array(
-      'Nama_Bahan' => $data['Nama_Bahan'],
-      'Jumlah' => str_replace(',', '.', $data['Jumlah']),
-      'Satuan' => $data['Satuan'],
-      'Merk' => $data['Merk'],
-      'Serial' => $data['Serial'],
-      'Exp' => $data['Exp'],
-      'Letak' => $data['Letak']
+      'Nama_Bahan' => $data['Nama_Bahan'] ?? '',
+      'Jumlah'     => str_replace(',', '.', $data['Jumlah'] ?? 0),
+      'Satuan'     => $data['Satuan'] ?? '',
+      'Merk'       => $data['Merk'] ?? '',
+      'Serial'     => $data['Serial'] ?? '',
+      'Exp'        => $data['Exp'] ?? '',
+      'Letak'      => $data['Letak'] ?? ''
     );
     $results = $this->db->insert($table, $values);
     return $results;
@@ -54,16 +54,15 @@ class SL_SIMLAB_BahanClass extends SL_SimlabPlugin
   {
     $table = $this->db->prefix . $this->table;
     $value = array(
-      "Nama_Bahan" => $data['Nama_Bahan'],
-      "Jumlah" => str_replace(',', '.', $data["Qty"]),
-      "Satuan" => $data['Satuan'],
-      "Merk" => $data['Merk'],
-      "Serial" => $data["Serial"],
-      "Exp" => $data["Exp"],
-      "Letak" => $data["Letak"]
+      "Nama_Bahan" => $data['Nama_Bahan'] ?? '',
+      "Jumlah"     => str_replace(',', '.', $data["Qty"] ?? 0),
+      "Satuan"     => $data['Satuan'] ?? '',
+      "Merk"       => $data['Merk'] ?? '',
+      "Serial"     => $data["Serial"] ?? '',
+      "Exp"        => $data["Exp"] ?? '',
+      "Letak"      => $data["Letak"] ?? ''
     );
     $where = array('id' => $data['id']);
-
 
     $results = $this->db->update($table, $value, $where);
     return $results;
