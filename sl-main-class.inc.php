@@ -204,7 +204,7 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
           <div class="col-md-4 text-md-end mt-2 mt-md-0">
             <div class="d-inline-flex align-items-center bg-white rounded-pill px-3 py-2 shadow-sm border">
                <span class="dot bg-success me-2" style="width: 8px; height: 8px; border-radius: 50%;"></span>
-               <small class="text-muted fw-bold">System Online</small>
+               <small class="text-muted fw-bold">SIMLAB</small>
                <span class="mx-2 text-muted">|</span>
                <small class="text-primary fw-bold">v1.0.1</small>
             </div>

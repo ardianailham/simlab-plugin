@@ -4,6 +4,7 @@
  * Plugin Name: SIMLAB Plugin
  * Description: Plugin for "Sistem Informasi dan Manajemen Laboratorium"
  * Author: Ardiana Ilham Nurrohman
+ * Author URI: https://github.com/ardianailham
  * Version: 1.0.1
  */
 

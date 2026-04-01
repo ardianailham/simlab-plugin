@@ -2,8 +2,6 @@
 require_once 'classes/sl-simlab-alat-class.inc.php';
 require_once 'classes/sl-simlab-logbook-alat-class.inc.php';
 
-$user = get_current_user();
-
 if (!is_user_logged_in()) {
 ?>
   <div class="row">
@@ -19,12 +17,97 @@ if (!is_user_logged_in()) {
   $obj   = new SL_SIMLAB_AlatClass;
   $nonce = wp_create_nonce('sl_simlab_alat_action');
 
+  /* ── HANDLE POST ACTIONS ─────────────────────────────────────────────── */
+  
+  // 1. Handle Submit Booking Log
+  if ((isset($_POST['submit-log-alat']) || (isset($_POST['action_type']) && $_POST['action_type'] === 'submit-log-alat')) && check_admin_referer('sl_simlab_alat_action') && SL_SIMLAB_Auth::can_book()) {
+    $obj1   = new SL_SIMLAB_LogbookAlatClass;
+    $addLog = $obj1->addLogAlat($_POST);
+    if ($addLog > 0) {
+?>
+      <script type="text/javascript">
+        alert('Data Berhasil Ditambahkan');
+        document.location = '?page=<?= esc_js($obj1->plugin_slug . $obj1->menu_slug); ?>';
+      </script>
+<?php
+      exit;
+    }
+  }
+
+  // 2. Handle Import Alat
+  if (isset($_POST['import-alat']) && check_admin_referer('sl_import_alat')) {
+      global $simlab_export_import;
+      $count = $simlab_export_import->importAlat($_FILES['file_csv']);
+      if ($count !== false) {
+?>
+        <script type="text/javascript">
+          alert('<?= $count; ?> Data Berhasil Diimport');
+          document.location = '?page=<?= esc_js($obj->plugin_slug . $obj->menu_slug); ?>';
+        </script>
+<?php
+        exit;
+      } else {
+?>
+        <script type="text/javascript">
+          alert('Data Gagal Diimport. Pastikan file benar.');
+          history.back();
+        </script>
+<?php
+        exit;
+      }
+  }
+
+  // 3. Handle Add Alat
+  if (isset($_POST['submit-alat']) && check_admin_referer('sl_simlab_alat_action')) {
+    if (empty($_POST['Nama_Alat']) || empty($_POST['Qty'])) {
+?>
+      <script type="text/javascript">
+        alert('Form yang anda masukkan tidak benar!');
+        history.back();
+      </script>
+<?php
+      exit;
+    } else {
+      $obj->tambahAlat($_POST);
+?>
+      <script type="text/javascript">
+        document.location = '?page=<?= esc_js($obj->plugin_slug . $obj->menu_slug); ?>';
+      </script>
+<?php
+      exit;
+    }
+  }
+
+  // 4. Handle Edit Alat
+  if (isset($_POST['ubah-alat']) && check_admin_referer('sl_simlab_alat_action')) {
+    if ($obj->ubahAlat($_POST) > 0) {
+?>
+      <script type="text/javascript">
+        document.location = '?page=<?= esc_js($obj->plugin_slug . $obj->menu_slug); ?>';
+      </script>
+<?php
+      exit;
+    } else {
+?>
+      <script type="text/javascript">
+        alert('Data Gagal Diubah');
+        history.back();
+      </script>
+<?php
+      exit;
+    }
+  }
+
   SL_SimlabPlugin::admin_header('Manajemen Alat', 'fa-wrench');
 
   /* ── DETAIL ─────────────────────────────────────────────────────────── */
   if (isset($_GET['detail-alat'])) {
     $id   = intval($_GET['id']);
     $data = $obj->getAlatById($id);
+    if (!$data) {
+        echo "<div class='alert alert-danger'>Data alat tidak ditemukan!</div>";
+        return;
+    }
 ?>
     <div class="row d-flex justify-content-center">
       <div class="col-lg-6">
@@ -49,6 +132,10 @@ if (!is_user_logged_in()) {
   } elseif (isset($_GET['ubah-alat'])) {
     $id   = intval($_GET['id']);
     $data = $obj->getAlatById($id);
+    if (!$data) {
+        echo "<div class='alert alert-danger'>Data alat tidak ditemukan!</div>";
+        return;
+    }
 ?>
     <div class="row d-flex justify-content-center">
       <div class="col-lg-8">
@@ -85,6 +172,10 @@ if (!is_user_logged_in()) {
   } elseif (isset($_GET['addlog-alat'])) {
     $id   = intval($_GET['id']);
     $data = $obj->getAlatById($id);
+    if (!$data) {
+        echo "<div class='alert alert-danger'>Data alat tidak ditemukan!</div>";
+        return;
+    }
     $time = $obj->getTime();
 ?>
     <div class="row d-flex justify-content-center">
@@ -94,6 +185,8 @@ if (!is_user_logged_in()) {
             <h5 class="card-title fw-bold mb-4"><i class="fa fa-calendar-plus-o me-2 text-success"></i>Booking: <?= esc_html($data['Nama_Alat']); ?></h5>
             <form method="post">
               <?php wp_nonce_field('sl_simlab_alat_action', '_wpnonce'); ?>
+              <input type="hidden" name="action_type" value="submit-log-alat">
+              <input type="hidden" name="submit-log-alat" value="1">
               <input type="hidden" name="id_alat" value="<?= intval($data['id']); ?>">
               <input type="hidden" name="user_id" value="<?= get_current_user_id(); ?>">
               <div class="row">
@@ -155,86 +248,6 @@ if (!is_user_logged_in()) {
 
   /* ── LIST (default) ──────────────────────────────────────────────────── */
   } else {
-
-    /* ── Handle POST: Submit booking log ─────────────────────────────── */
-    if (isset($_POST['submit-log-alat']) && check_admin_referer('sl_simlab_alat_action') && SL_SIMLAB_Auth::can_book()) {
-      $obj1   = new SL_SIMLAB_LogbookAlatClass;
-      $addLog = $obj1->addLogAlat($_POST);
-      if ($addLog > 0) {
-?>
-        <script type="text/javascript">
-          alert('Data Berhasil Ditambahkan');
-          document.location = '?page=<?= esc_js($obj1->plugin_slug . $obj1->menu_slug); ?>';
-        </script>
-<?php
-      } else {
-?>
-        <script type="text/javascript">
-          alert('Data Gagal Ditambahkan');
-          history.back();
-        </script>
-<?php
-      }
-    }
-
-    /* ── Handle POST: Import alat ────────────────────────────────────── */
-    if (isset($_POST['import-alat']) && check_admin_referer('sl_import_alat')) {
-        global $simlab_export_import;
-        $count = $simlab_export_import->importAlat($_FILES['file_csv']);
-        if ($count !== false) {
-?>
-          <script type="text/javascript">
-            alert('<?= $count; ?> Data Berhasil Diimport');
-            document.location = '?page=<?= esc_js($obj->plugin_slug . $obj->menu_slug); ?>';
-          </script>
-<?php
-        } else {
-?>
-          <script type="text/javascript">
-            alert('Data Gagal Diimport. Pastikan file benar.');
-            history.back();
-          </script>
-<?php
-        }
-    }
-
-    /* ── Handle POST: Add alat ───────────────────────────────────────── */
-    if (isset($_POST['submit-alat']) && check_admin_referer('sl_simlab_alat_action')) {
-      if (empty($_POST['Nama_Alat']) || empty($_POST['Qty'])) {
-?>
-        <script type="text/javascript">
-          alert('Form yang anda masukkan tidak benar!');
-          history.back();
-        </script>
-<?php
-      } else {
-        $obj->tambahAlat($_POST);
-?>
-        <script type="text/javascript">
-          document.location = '?page=<?= esc_js($obj->plugin_slug . $obj->menu_slug); ?>';
-        </script>
-<?php
-      }
-    }
-
-    /* ── Handle POST: Edit alat ──────────────────────────────────────── */
-    if (isset($_POST['ubah-alat']) && check_admin_referer('sl_simlab_alat_action')) {
-      if ($obj->ubahAlat($_POST) > 0) {
-?>
-        <script type="text/javascript">
-          document.location = '?page=<?= esc_js($obj->plugin_slug . $obj->menu_slug); ?>';
-        </script>
-<?php
-      } else {
-?>
-        <script type="text/javascript">
-          alert('Data Gagal Diubah');
-          history.back();
-        </script>
-<?php
-      }
-    }
-
     $data = $obj->getAlat();
 ?>
     <div class="row">
