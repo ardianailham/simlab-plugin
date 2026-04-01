@@ -77,7 +77,7 @@ install_wp() {
         rm -rf $WP_EXTRACT_DIR
     fi
 
-    download https://raw.github.com/markoheijnen/wp-mysqli/master/db.php $WP_CORE_DIR/wp-content/db.php
+    # wp-mysqli is abandoned; WordPress has built-in mysqli support since 3.9, so no drop-in is needed.
 }
 
 install_test_suite() {
@@ -128,8 +128,8 @@ install_db() {
         fi
     fi
 
-    # Create the database
-    mysqladmin create $DB_NAME --user="$DB_USER" --password="$DB_PASS"$EXTRA
+    # Create the database (ignore error if it already exists from a previous run)
+    mysqladmin create $DB_NAME --user="$DB_USER" --password="$DB_PASS"$EXTRA || true
 }
 
 install_wp
