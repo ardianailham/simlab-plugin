@@ -1,4 +1,7 @@
 <?php
+if (!current_user_can('manage_options')) {
+  wp_die('Unauthorized');
+}
 $simlab_plugin = new SL_SimlabPlugin;
 $options = get_option('sl_simlab_links');
 if ($options == false) $options = array('daftar-alat' => '', 'daftar-bahan' => '', 'logbook-alat' => '', 'logbook-bahan' => '');
@@ -26,6 +29,10 @@ if ($options == false) $options = array('daftar-alat' => '', 'daftar-bahan' => '
       <input type="url" class="form-control" name="logbook-bahan" id="floatingLogbookBahan" placeholder="Link Logboook Bahan" value="<?= $options['logbook-bahan'] ?>">
       <label for="floatingLogbookBahan" class="form-label">Link Logbook Bahan</label>
     </div>
+    <div class="form-floating mb-3 col-lg-5">
+      <input type="url" class="form-control" name="user-api-url" id="floatingUserApi" placeholder="External User API" value="<?= isset($options['user-api-url']) ? $options['user-api-url'] : '' ?>">
+      <label for="floatingUserApi" class="form-label">External User API URL</label>
+    </div>
     <div class="col-lg-3">
       <button type="submit" class="btn btn-primary" id="submit-link" name="submit-link">Simpan</button>
     </div>
@@ -35,7 +42,11 @@ if ($options == false) $options = array('daftar-alat' => '', 'daftar-bahan' => '
 if (isset($_POST['submit-link'])) {
   global $wp;
   $values = array(
-    'daftar-alat' => $_POST['daftar-alat'], 'daftar-bahan' => $_POST['daftar-bahan'], 'logbook-alat' => $_POST['logbook-alat'], 'logbook-bahan' => $_POST['logbook-bahan']
+    'daftar-alat' => $_POST['daftar-alat'], 
+    'daftar-bahan' => $_POST['daftar-bahan'], 
+    'logbook-alat' => $_POST['logbook-alat'], 
+    'logbook-bahan' => $_POST['logbook-bahan'],
+    'user-api-url' => $_POST['user-api-url']
   );
   if (!$options) {
     add_option('sl_simlab_links', $values);

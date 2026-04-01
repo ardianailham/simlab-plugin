@@ -115,7 +115,7 @@ if (!is_user_logged_in()) {
 <?php
   /* ── DELETE ──────────────────────────────────────────────────────────── */
   } elseif (isset($_GET['hapus-alat'])) {
-    if (!current_user_can('manage_options')) {
+    if (!SL_SIMLAB_Auth::is_admin()) {
       wp_die(__('You do not have permission to perform this action.'));
     }
     $hapus = $obj->hapusAlat(intval($_GET['id']));
@@ -139,7 +139,7 @@ if (!is_user_logged_in()) {
   } else {
 
     /* ── Handle POST: Submit booking log ─────────────────────────────── */
-    if (isset($_POST['submit-log-alat']) && check_admin_referer('sl_simlab_alat_action')) {
+    if (isset($_POST['submit-log-alat']) && check_admin_referer('sl_simlab_alat_action') && SL_SIMLAB_Auth::can_book()) {
       $obj1   = new SL_SIMLAB_LogbookAlatClass;
       $addLog = $obj1->addLogAlat($_POST);
       if ($addLog > 0) {
@@ -222,7 +222,7 @@ if (!is_user_logged_in()) {
     <div class="container mt-3 d-flex justify-content-center">
       <div class="col-lg-12">
 
-        <?php if (current_user_can('manage_options')) { ?>
+        <?php if (SL_SIMLAB_Auth::is_admin()) { ?>
           <div class="row mb-3">
             <div class="col-lg-12 d-flex gap-2 align-items-center">
               <button id="tambah-alat-button" class="btn btn-primary" onclick="return tambahAlat()">Tambah Alat</button>
@@ -282,7 +282,7 @@ if (!is_user_logged_in()) {
                     <td><?= esc_html($alat['Merk']); ?></td>
                     <td><?= esc_html($alat['Qty']); ?></td>
                     <td>
-                      <?php if (current_user_can('manage_options')) { ?>
+                      <?php if (SL_SIMLAB_Auth::is_admin()) { ?>
                         <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&hapus-alat&id=<?= intval($alat['id']); ?>"
                            class="btn btn-sm btn-danger ms-1"
                            onclick="return confirm('Are you sure you want to delete this item?');">Delete</a>
@@ -291,8 +291,10 @@ if (!is_user_logged_in()) {
                       <?php } ?>
                       <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&detail-alat&id=<?= intval($alat['id']); ?>"
                          class="btn btn-sm btn-primary ms-1">Detail</a>
-                      <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&addlog-alat&id=<?= intval($alat['id']); ?>"
-                         class="btn btn-sm btn-success ms-1">Book</a>
+                      <?php if (SL_SIMLAB_Auth::can_book()) { ?>
+                        <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&addlog-alat&id=<?= intval($alat['id']); ?>"
+                          class="btn btn-sm btn-success ms-1">Book</a>
+                      <?php } ?>
                     </td>
                   </tr>
                   <?php $i++; ?>

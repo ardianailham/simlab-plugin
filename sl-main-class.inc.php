@@ -11,13 +11,21 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
 
   function simlab_admin_menu()
   {
-    // add_options_page();
-    add_menu_page($this->plugin_name, 'SIMLAB', 'manage_options', $this->plugin_slug, 'setting_page', '', 200);
-    add_submenu_page($this->plugin_slug, 'Settings', 'Settings', 'edit_pages', $this->plugin_slug . '-settings', 'setting_page');
-    add_submenu_page($this->plugin_slug, 'Daftar Alat', 'Daftar Alat', 'edit_pages', $this->plugin_slug . '-daftar-alat', 'setting_page');
-    add_submenu_page($this->plugin_slug, 'Daftar Bahan', 'Daftar Bahan', 'edit_pages', $this->plugin_slug . '-daftar-bahan', 'setting_page');
-    add_submenu_page($this->plugin_slug, 'Logbook Alat', 'Logbook Alat', 'edit_pages', $this->plugin_slug . '-logbook-alat', 'setting_page');
-    add_submenu_page($this->plugin_slug, 'Logbook Bahan', 'Logbook Bahan', 'edit_pages', $this->plugin_slug . '-logbook-bahan', 'setting_page');
+    if (SL_SIMLAB_Auth::is_admin()) {
+      $cap = 'read'; // Base capability for Simlab Admins
+      add_menu_page($this->plugin_name, 'SIMLAB', $cap, $this->plugin_slug, 'setting_page', '', 200);
+
+      // Only WP Super Admins (manage_options) see the general Settings page
+      if (current_user_can('manage_options')) {
+        add_submenu_page($this->plugin_slug, 'Settings', 'Settings', 'manage_options', $this->plugin_slug . '-settings', 'setting_page');
+      }
+
+      add_submenu_page($this->plugin_slug, 'Daftar Alat', 'Daftar Alat', $cap, $this->plugin_slug . '-daftar-alat', 'setting_page');
+      add_submenu_page($this->plugin_slug, 'Daftar Bahan', 'Daftar Bahan', $cap, $this->plugin_slug . '-daftar-bahan', 'setting_page');
+      add_submenu_page($this->plugin_slug, 'Logbook Alat', 'Logbook Alat', $cap, $this->plugin_slug . '-logbook-alat', 'setting_page');
+      add_submenu_page($this->plugin_slug, 'Logbook Bahan', 'Logbook Bahan', $cap, $this->plugin_slug . '-logbook-bahan', 'setting_page');
+      add_submenu_page($this->plugin_slug, 'User Management', 'User Management', $cap, $this->plugin_slug . '-user-management', 'setting_page');
+    }
   }
 
   function simlab_fixed_button()

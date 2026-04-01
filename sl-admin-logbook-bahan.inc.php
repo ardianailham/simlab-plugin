@@ -12,7 +12,7 @@ if (isset($_GET['hapus'])) {
   $logbook = $obj->getLogBahanById($id);
 
   // Allow delete only if admin OR the booking belongs to the current user
-  if (!current_user_can('manage_options') && intval($logbook['user_id']) !== $user_id) {
+  if (!SL_SIMLAB_Auth::can_delete_log($user_id, $logbook['user_id'])) {
     wp_die(__('You do not have permission to perform this action.'));
   }
 
@@ -81,12 +81,12 @@ if (isset($_GET['hapus'])) {
               <td><?= esc_html($logbook['qty'] . ' ' . $logbook['Satuan']); ?></td>
               <td><?= esc_html($logbook['date']); ?></td>
               <td>
-                <?php if (current_user_can('manage_options') || intval($logbook['user_id']) === $user_id) { ?>
+                <?php if (SL_SIMLAB_Auth::can_delete_log($user_id, $logbook['user_id'])) { ?>
                   <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&hapus&id=<?= intval($logbook['id']); ?>"
                      class="btn btn-sm btn-danger ms-1"
                      onclick="return confirm('Yakin?');">Hapus</a>
                 <?php } ?>
-                <?php if (current_user_can('manage_options')) { ?>
+                <?php if (SL_SIMLAB_Auth::is_admin()) { ?>
                   <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&detail&id=<?= intval($logbook['id']); ?>"
                      class="btn btn-sm btn-primary ms-1">Detail</a>
                 <?php } ?>

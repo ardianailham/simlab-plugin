@@ -13,6 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 define('SL_SIMLAB_PATH', plugin_dir_url(__FILE__));
 
 include_once dirname(__FILE__) . '/classes/sl-simlab-base-class.inc.php';
+include_once dirname(__FILE__) . '/classes/sl-simlab-auth.inc.php';
 include_once dirname(__FILE__) . '/sl-main-class.inc.php';
 include_once dirname(__FILE__) . '/sl-simlab-template.inc.php';
 include_once dirname(__FILE__) . '/classes/sl-simlab-alat-class.inc.php';
@@ -65,6 +66,8 @@ function setting_page()
     include_once dirname(__FILE__) . '/sl-admin-logbook-bahan.inc.php';
   elseif ($_GET["page"] == $simlab_plugin->plugin_slug . '-settings')
     include_once dirname(__FILE__) . '/sl-admin-settings.inc.php';
+  elseif ($_GET["page"] == $simlab_plugin->plugin_slug . '-user-management')
+    include_once dirname(__FILE__) . '/sl-admin-user-management.php';
   else include_once dirname(__FILE__) . '/sl-admin-dashboard.php';
 }
 

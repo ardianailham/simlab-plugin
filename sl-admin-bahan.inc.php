@@ -130,7 +130,7 @@ if (!is_user_logged_in()) {
 <?php
   /* ── DELETE ──────────────────────────────────────────────────────────── */
   } elseif (isset($_GET['hapus-bahan'])) {
-    if (!current_user_can('manage_options')) {
+    if (!SL_SIMLAB_Auth::is_admin()) {
       wp_die(__('You do not have permission to perform this action.'));
     }
     $hapus = $obj->hapusBahan(intval($_GET['id']));
@@ -154,7 +154,7 @@ if (!is_user_logged_in()) {
   } else {
 
     /* ── Handle POST: Submit booking log ─────────────────────────────── */
-    if (isset($_POST['submit-log-bahan']) && check_admin_referer('sl_simlab_bahan_action')) {
+    if (isset($_POST['submit-log-bahan']) && check_admin_referer('sl_simlab_bahan_action') && SL_SIMLAB_Auth::can_book()) {
       $obj1   = new SL_SIMLAB_LogbookBahanClass;
       $addLog = $obj1->addLogBahan($_POST);
       if ($addLog > 0) {
@@ -237,7 +237,7 @@ if (!is_user_logged_in()) {
     <div class="container mt-3 d-flex justify-content-center">
       <div class="col-lg-12">
 
-        <?php if (current_user_can('manage_options')) { ?>
+        <?php if (SL_SIMLAB_Auth::is_admin()) { ?>
           <div class="row mb-3">
             <div class="col-lg-12 d-flex gap-2 align-items-center">
               <button id="tambah-bahan-button" class="btn btn-primary" onclick="return tambahBahan()">Tambah Bahan</button>
@@ -315,7 +315,7 @@ if (!is_user_logged_in()) {
                     <td><?= esc_html($alat['Jumlah'] . ' ' . $alat['Satuan']); ?></td>
                     <td><?= esc_html($alat['Letak']); ?></td>
                     <td>
-                      <?php if (current_user_can('manage_options')) { ?>
+                      <?php if (SL_SIMLAB_Auth::is_admin()) { ?>
                         <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&hapus-bahan&id=<?= intval($alat['id']); ?>"
                            class="btn btn-sm btn-danger ms-1"
                            onclick="return confirm('Are you sure you want to delete this item?');">Delete</a>
@@ -324,8 +324,10 @@ if (!is_user_logged_in()) {
                       <?php } ?>
                       <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&detail-bahan&id=<?= intval($alat['id']); ?>"
                          class="btn btn-sm btn-primary ms-1">Detail</a>
-                      <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&addlog-bahan&id=<?= intval($alat['id']); ?>"
-                         class="btn btn-sm btn-success ms-1">Book</a>
+                      <?php if (SL_SIMLAB_Auth::can_book()) { ?>
+                        <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&addlog-bahan&id=<?= intval($alat['id']); ?>"
+                          class="btn btn-sm btn-success ms-1">Book</a>
+                      <?php } ?>
                     </td>
                   </tr>
                   <?php $i++; ?>
