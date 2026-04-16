@@ -93,5 +93,8 @@ jobs:
           bash bin/install-wp-tests.sh \
             wordpress_test wp_user wp_password 127.0.0.1 ${{ matrix.wp }}
 
+      - name: Install Composer dependencies
+        run: composer install --no-progress --no-interaction
+
       - name: Run PHPUnit tests
         run: phpunit --configuration phpunit.xml.dist
