@@ -1,14 +1,15 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 class SL_SIMLAB_BaseClass
 {
 
   public function getTime()
   {
-    $now_ts = current_time('timestamp');
+    $now_ts = time();
     $then_ts = $now_ts + HOUR_IN_SECONDS;
-    $now = date("Y-m-d\TH:i", $now_ts);
-    $then = date("Y-m-d\TH:i", $then_ts);
+    $now = wp_date("Y-m-d\TH:i", $now_ts);
+    $then = wp_date("Y-m-d\TH:i", $then_ts);
     return array($now, $then);
   }
 

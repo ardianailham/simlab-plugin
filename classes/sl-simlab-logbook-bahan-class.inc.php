@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 class SL_SIMLAB_LogbookBahanClass extends SL_SimlabPlugin
 {
@@ -22,8 +23,13 @@ class SL_SIMLAB_LogbookBahanClass extends SL_SimlabPlugin
   public function getLogBahan()
   {
     $table1 = $this->db->prefix . $this->table;
+    $table_kemasan = $this->db->prefix . 'sl_simlab_bahan_kemasan';
     $table2 = $this->db->prefix . 'sl_simlab_bahan';
-    $query = "SELECT " . $table1 . ".id, " . $table1 . ".qty, " . $table1 . ".user_id, " . $table1 . ".date, " . $table2 . ".Nama_Bahan, " . $table2 . ".Satuan, " . $table2 . ".Serial, " . $table2 . ".Exp, " . $table2 . ".Letak FROM (" . $table1 . " INNER JOIN " . $table2 . " ON " . $table1 . ".id_bahan=" . $table2 . ".id)";
+    
+    $query = "SELECT l.id, l.qty, l.user_id, l.date, b.Nama_Bahan, b.Satuan_Dasar, k.label_kemasan, k.satuan
+              FROM {$table1} l 
+              INNER JOIN {$table_kemasan} k ON l.id_kemasan = k.id 
+              INNER JOIN {$table2} b ON k.id_bahan = b.id ORDER BY l.date DESC";
     $results = $this->db->get_results($query, ARRAY_A);
     return $results;
   }
@@ -31,8 +37,14 @@ class SL_SIMLAB_LogbookBahanClass extends SL_SimlabPlugin
   public function getLogBahanById($id)
   {
     $table1 = $this->db->prefix . $this->table;
+    $table_kemasan = $this->db->prefix . 'sl_simlab_bahan_kemasan';
     $table2 = $this->db->prefix . 'sl_simlab_bahan';
-    $query = $this->db->prepare("SELECT " . $table1 . ".qty, " . $table1 . ".user_id, " . $table1 . ".date, " . $table2 . ".Nama_Bahan, " . $table2 . ".Satuan, " . $table2 . ".Serial, " . $table2 . ".Exp, " . $table2 . ".Letak FROM (" . $table1 . " INNER JOIN " . $table2 . " ON " . $table1 . ".id_bahan=" . $table2 . ".id) WHERE " . $table1 . ".id=%d", $id);
+    
+    $query = $this->db->prepare("SELECT l.qty, l.user_id, l.date, b.Nama_Bahan, b.Satuan_Dasar, k.label_kemasan, k.satuan
+              FROM {$table1} l 
+              INNER JOIN {$table_kemasan} k ON l.id_kemasan = k.id 
+              INNER JOIN {$table2} b ON k.id_bahan = b.id 
+              WHERE l.id = %d", $id);
     $results = $this->db->get_row($query, ARRAY_A);
     return $results;
   }
@@ -40,35 +52,38 @@ class SL_SIMLAB_LogbookBahanClass extends SL_SimlabPlugin
   public function addLogBahan($data)
   {
     $bahan = new SL_SIMLAB_BahanClass;
-    $infobahan = $bahan->getBahanById($data['id_bahan']);
-    $stok = $infobahan['Jumlah'];
-    if ($stok === 0) {
-?>
-      <script type="text/javascript">
-        alert("Stok Habis");
-        history.back();
-      </script>
-    <?php
+    $id_kemasan = $data['id_kemasan'];
+    $kemasan = $bahan->getKemasanById($id_kemasan);
+    
+    if (!$kemasan) {
+      echo '<script type="text/javascript">alert("Kemasan tidak ditemukan!"); history.back();</script>';
+      return 0;
+    }
+
+    $stok = $kemasan['jumlah_tersedia'];
+    if ($stok <= 0) {
+      echo '<script type="text/javascript">alert("Stok kemasan habis!"); history.back();</script>';
+      return 0;
     } elseif ($data['Qty'] > $stok) {
-    ?>
-      <script type="text/javascript">
-        alert("Jumlah melebihi stok!");
-        history.back();
-      </script>
-<?php
+      echo '<script type="text/javascript">alert("Jumlah melebihi stok kemasan!"); history.back();</script>';
+      return 0;
     } else {
       $values = array(
-        'id' => $data['id'],
-        'id_bahan' => $data['id_bahan'],
-        'user_id' => $data['user_id'],
-        'qty' => $data['Qty'],
-        'date' => $data['tanggal'],
+        'id_kemasan' => intval($data['id_kemasan']),
+        'user_id'    => get_current_user_id(),
+        'qty'        => floatval($data['Qty']),
+        'date'       => sanitize_text_field($data['tanggal']),
       );
+      if (!empty($data['tujuan'])) {
+         $values['tujuan'] = sanitize_text_field($data['tujuan']);
+      }
+      
       $this->db->insert(
         $this->db->prefix . $this->table,
         $values
       );
-      $bahan->updateByBook($data['id_bahan'], $stok, $data['Qty']);
+      
+      $bahan->updateByKemasan($data['id_kemasan'], $data['Qty']);
       return $this->db->insert_id;
     }
   }

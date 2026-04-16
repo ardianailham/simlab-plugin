@@ -1,10 +1,12 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) { exit; }
 class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
 {
   private $plugin_name = 'SIMLAB';
   public $plugin_slug = 'simlab';
   public $table_1 = 'sl_simlab_alat';
   public $table_2 = 'sl_simlab_bahan';
+  public $table_kemasan = 'sl_simlab_bahan_kemasan';
   public $table_3 = 'sl_simlab_logbook_alat';
   public $table_4 = 'sl_simlab_logbook_bahan';
   public $table_5 = 'sl_simlab_status';
@@ -36,8 +38,8 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
       $option['daftar-bahan'] = '#';
     }
 ?>
-    <a href="<?= $option['daftar-alat']; ?>" id="buttonDaftarAlat" class="ms-3"></a>
-    <a href="<?= $option['daftar-bahan']; ?>" id="buttonDaftarBahan" class="ms-3"></a>
+    <a href="<?= esc_url($option['daftar-alat']); ?>" id="buttonDaftarAlat" class="ms-3"></a>
+    <a href="<?= esc_url($option['daftar-bahan']); ?>" id="buttonDaftarBahan" class="ms-3"></a>
 <?php
   }
   public function _install()
@@ -54,19 +56,38 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
   `Nama_Alat` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `Merk` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `Qty` int(11) NOT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB {$charset_collate};";
 
     $sql_bahan = "CREATE TABLE `{$p}sl_simlab_bahan` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `Nama_Bahan` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `Jumlah` decimal(10,5) NOT NULL,
-  `Satuan` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Alias` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `Kategori` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `Merk` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `Serial` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `Exp` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `Letak` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Satuan_Dasar` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
+) ENGINE=InnoDB {$charset_collate};";
+
+    $sql_bahan_kemasan = "CREATE TABLE `{$p}sl_simlab_bahan_kemasan` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id_bahan` int(11) NOT NULL,
+  `label_kemasan` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `kapasitas_awal` decimal(10,5) NOT NULL,
+  `jumlah_tersedia` decimal(10,5) NOT NULL,
+  `satuan` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `exp_date` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `letak` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `catatan_kondisi` text COLLATE utf8mb4_unicode_ci,
+  `is_empty` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `id_bahan` (`id_bahan`)
 ) ENGINE=InnoDB {$charset_collate};";
 
     $sql_logbook_alat = "CREATE TABLE `{$p}sl_simlab_logbook_alat` (
@@ -77,6 +98,8 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
   `start_date` bigint(20) NOT NULL,
   `end_date` bigint(20) NOT NULL,
   `status` int(11) NOT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   KEY `status` (`status`),
@@ -85,13 +108,16 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
 
     $sql_logbook_bahan = "CREATE TABLE `{$p}sl_simlab_logbook_bahan` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `id_bahan` int(11) NOT NULL,
+  `id_kemasan` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `qty` decimal(10,5) NOT NULL,
   `date` datetime NOT NULL,
+  `tujuan` text COLLATE utf8mb4_unicode_ci,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
-  KEY `id_bahan` (`id_bahan`)
+  KEY `id_kemasan` (`id_kemasan`)
 ) ENGINE=InnoDB {$charset_collate};";
 
     $sql_status = "CREATE TABLE `{$p}sl_simlab_status` (
@@ -102,6 +128,7 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
 
     dbDelta($sql_alat);
     dbDelta($sql_bahan);
+    dbDelta($sql_bahan_kemasan);
     dbDelta($sql_logbook_alat);
     dbDelta($sql_logbook_bahan);
     dbDelta($sql_status);
@@ -198,7 +225,7 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
         <div class="row mb-4 align-items-center">
           <div class="col-md-8">
             <h1 class="wp-heading-inline m-0" style="font-weight: 700; color: #2c3e50;">
-              <i class="fa <?= $icon ?> text-primary me-2"></i> <?= $title ?>
+              <i class="fa <?= esc_attr($icon) ?> text-primary me-2"></i> <?= esc_html($title) ?>
             </h1>
           </div>
           <div class="col-md-4 text-md-end mt-2 mt-md-0">

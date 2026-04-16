@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) { exit; }
 class SL_SIMLAB_AlatClass extends SL_SimlabPlugin
 {
   private $table = 'sl_simlab_alat';
@@ -31,7 +32,7 @@ class SL_SIMLAB_AlatClass extends SL_SimlabPlugin
   // query alat from database berdasar id
   public function getAlatById($id)
   {
-    $query = $this->db->prepare("SELECT * FROM " . $this->db->prefix . $this->table . " WHERE id= %s", $id);
+    $query = $this->db->prepare("SELECT * FROM " . $this->db->prefix . $this->table . " WHERE id= %d", $id);
     $results = $this->db->get_row($query, ARRAY_A);
     return $results;
   }
@@ -44,9 +45,9 @@ class SL_SIMLAB_AlatClass extends SL_SimlabPlugin
       $table = $this->db->prefix . $this->table;
       $values = array(
         'id' => '',
-        'Nama_Alat' => $data['Nama_Alat'],
-        'Merk' => $data['Merk'],
-        'Qty' => $data['Qty']
+        'Nama_Alat' => sanitize_text_field($data['Nama_Alat']),
+        'Merk' => sanitize_text_field($data['Merk']),
+        'Qty' => intval($data['Qty'])
       );
       // $results = $this->db->query($this->db->prepare($query));
       $results = $this->db->insert($table, $values);
@@ -62,11 +63,11 @@ class SL_SIMLAB_AlatClass extends SL_SimlabPlugin
   {
     $table = $this->db->prefix . $this->table;
     $value = array(
-      "Nama_Alat" => $data['Nama_Alat'],
-      "Merk" => $data['Merk'],
-      "Qty" => $data['Qty']
+      "Nama_Alat" => sanitize_text_field($data['Nama_Alat']),
+      "Merk" => sanitize_text_field($data['Merk']),
+      "Qty" => intval($data['Qty'])
     );
-    $where = array('id' => $data['id']);
+    $where = array('id' => intval($data['id']));
 
 
     $results = $this->db->update($table, $value, $where);

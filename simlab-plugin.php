@@ -44,6 +44,16 @@ add_action('wp_footer', array($simlab_plugin, 'simlab_fixed_button'));
 add_action('admin_init', 'sl_simlab_handle_export');
 SL_SIMLAB_PubChemClass::register_ajax();
 
+add_action('plugins_loaded', 'sl_simlab_update_db_check');
+function sl_simlab_update_db_check() {
+    $current_version = '1.0.2';
+    if (get_option('sl_simlab_db_version') !== $current_version) {
+        global $simlab_plugin;
+        $simlab_plugin->_install();
+        update_option('sl_simlab_db_version', $current_version);
+    }
+}
+
 function sl_simlab_handle_export() {
     global $simlab_export_import;
     if (isset($_GET['action']) && $_GET['action'] == 'export-alat' && check_admin_referer('sl_export_alat')) {
@@ -57,6 +67,9 @@ function sl_simlab_handle_export() {
 // Url redirects
 function setting_page()
 {
+  if (!is_user_logged_in() || !SL_SIMLAB_Auth::is_admin()) {
+    wp_die(__('You do not have permission to access this page.'));
+  }
   global $simlab_plugin;
   if ($_GET['page'] == $simlab_plugin->plugin_slug)
     include_once dirname(__FILE__) . '/sl-admin-dashboard.php';

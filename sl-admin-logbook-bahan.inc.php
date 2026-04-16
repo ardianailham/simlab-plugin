@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) { exit; }
 require_once 'classes/sl-simlab-bahan-class.inc.php';
 require_once 'classes/sl-simlab-logbook-bahan-class.inc.php';
 
@@ -11,6 +12,7 @@ SL_SimlabPlugin::admin_header('Logbook Penggunaan Bahan', 'fa-flask');
 /* ── DELETE ──────────────────────────────────────────────────────────────── */
 if (isset($_GET['hapus'])) {
   $id      = intval($_GET['id']);
+  check_admin_referer('sl_hapus_logbook_bahan_' . $id);
   $logbook = $obj->getLogBahanById($id);
 
   if (!SL_SIMLAB_Auth::can_delete_log($user_id, $logbook['user_id'])) {
@@ -34,9 +36,10 @@ if (isset($_GET['hapus'])) {
         <div class="card-body">
           <h5 class="card-title fw-bold text-primary mb-4"><i class="fa fa-info-circle me-2"></i>Detail Penggunaan Bahan</h5>
           <table class="table table-sm border-0">
-            <tr><th width="40%">Bahan</th><td>: <?= esc_html($data['Nama_Bahan']); ?></td></tr>
+            <tr><th width="40%">Bahan Utama</th><td>: <?= esc_html($data['Nama_Bahan']); ?></td></tr>
+            <tr><th width="40%">Label Botol/Kemasan</th><td>: <span class="badge bg-info text-dark"><?= esc_html($data['label_kemasan']); ?></span></td></tr>
             <tr><th>Pengguna</th><td>: <?= esc_html(get_userdata($data['user_id'])->display_name); ?></td></tr>
-            <tr><th>Jumlah Pakai</th><td>: <?= esc_html($data['qty'] . ' ' . $data['Satuan']); ?></td></tr>
+            <tr><th>Jumlah Pakai</th><td>: <?= esc_html($data['qty'] . ' ' . $data['satuan']); ?></td></tr>
             <tr><th>Tanggal</th><td>: <?= esc_html($data['date']); ?></td></tr>
           </table>
           <div class="mt-4">
@@ -74,9 +77,9 @@ if (isset($_GET['hapus'])) {
             <?php foreach ($data as $logbook) : ?>
               <tr>
                 <td><?= $i; ?></td>
-                <td class="fw-bold"><?= esc_html($logbook['Nama_Bahan']); ?></td>
+                <td class="fw-bold"><?= esc_html($logbook['Nama_Bahan']); ?><br><small class="text-muted"><i class="fa fa-box"></i> <?= esc_html($logbook['label_kemasan']); ?></small></td>
                 <td><i class="fa fa-user-circle-o me-1 text-muted"></i> <?= esc_html(get_userdata($logbook['user_id'])->display_name); ?></td>
-                <td><span class="badge bg-light text-dark border"><?= esc_html($logbook['qty'] . ' ' . $logbook['Satuan']); ?></span></td>
+                <td><span class="badge bg-light text-dark border"><?= esc_html($logbook['qty'] . ' ' . $logbook['satuan']); ?></span></td>
                 <td class="small"><?= esc_html($logbook['date']); ?></td>
                 <td>
                   <div class="d-flex justify-content-center gap-1">
@@ -85,7 +88,7 @@ if (isset($_GET['hapus'])) {
                          class="btn btn-sm btn-outline-primary" title="Detail"><i class="fa fa-eye"></i> Detail</a>
                     <?php } ?>
                     <?php if (SL_SIMLAB_Auth::can_delete_log($user_id, $logbook['user_id'])) { ?>
-                      <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&hapus&id=<?= intval($logbook['id']); ?>"
+                      <a href="<?= wp_nonce_url('?page=' . esc_attr($obj->plugin_slug . $obj->menu_slug) . '&hapus&id=' . intval($logbook['id']), 'sl_hapus_logbook_bahan_' . intval($logbook['id'])); ?>"
                          class="btn btn-sm btn-outline-danger"
                          onclick="return confirm('Hapus riwayat ini?');" title="Hapus"><i class="fa fa-trash"></i> Delete</a>
                     <?php } ?>

@@ -81,7 +81,7 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           extensions: mysqli, mbstring
-          tools: none
+          tools: phpunit
           coverage: none
 
       - name: Install Subversion (for WP test suite)
@@ -94,4 +94,4 @@ jobs:
             wordpress_test wp_user wp_password 127.0.0.1 ${{ matrix.wp }}
 
       - name: Run PHPUnit tests
-        run: php phpunit.phar --configuration phpunit.xml.dist
+        run: phpunit --configuration phpunit.xml.dist

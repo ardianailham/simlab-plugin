@@ -39,6 +39,8 @@ class SL_SIMLAB_PubChemClass
      */
     public static function ajax_handler()
     {
+        check_ajax_referer( 'sl_pubchem_lookup', 'nonce' );
+
         $name = isset( $_GET['name'] ) ? sanitize_text_field( wp_unslash( $_GET['name'] ) ) : '';
 
         if ( empty( $name ) ) {
