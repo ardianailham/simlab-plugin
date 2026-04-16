@@ -100,7 +100,7 @@ install_test_suite() {
 
     download https://develop.svn.wordpress.org/${WP_TESTS_TAG}/wp-tests-config-sample.php $WP_TESTS_DIR/wp-tests-config.php
     # Remove all dev dependencies
-    sed $ioption "s:dirname( dirname( __FILE__ ) ) . '/src':'/tmp/wordpress':" $WP_TESTS_DIR/wp-tests-config.php
+    sed $ioption "s|define(.*'ABSPATH'.*);|define( 'ABSPATH', '/tmp/wordpress/' );|g" $WP_TESTS_DIR/wp-tests-config.php
     sed $ioption "s/youremptytestdbnamehere/$DB_NAME/" $WP_TESTS_DIR/wp-tests-config.php
     sed $ioption "s/yourusernamehere/$DB_USER/" $WP_TESTS_DIR/wp-tests-config.php
     sed $ioption "s/yourpasswordhere/$DB_PASS/" $WP_TESTS_DIR/wp-tests-config.php

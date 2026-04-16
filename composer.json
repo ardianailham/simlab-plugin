@@ -1,0 +1,21 @@
+{
+    "name": "ardianailham/simlab-plugin",
+    "description": "Lab Management Plugin for WordPress",
+    "type": "wordpress-plugin",
+    "require-dev": {
+        "phpunit/phpunit": "^9.6",
+        "phpcompatibility/php-compatibility": "*",
+        "squizlabs/php_codesniffer": "*",
+        "dealerdirect/phpcodesniffer-composer-installer": "*",
+        "yoast/phpunit-polyfills": "^2.0"
+    },
+    "scripts": {
+        "test": "phpunit",
+        "compat": "phpcs --standard=phpcompat.xml ."
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    }
+}

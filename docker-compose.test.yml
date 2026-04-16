@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  db:
+    image: mariadb:10.6
+    environment:
+      MARIADB_DATABASE: wordpress_test
+      MARIADB_USER: wp_user
+      MARIADB_PASSWORD: wp_password
+      MARIADB_ROOT_PASSWORD: root_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "--password=root_password"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  phpunit:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+      args:
+        - PHP_VERSION=${PHP_VER:-8.1}
+    volumes:
+      - .:/app
+    environment:
+      - WP_TESTS_DIR=/tmp/wordpress-tests-lib
+      - WP_CORE_DIR=/tmp/wordpress
+      - MYSQL_HOST=db
+      - MYSQL_PORT=3306
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      bash -c "
+        composer update --no-interaction &&
+        bash bin/install-wp-tests.sh wordpress_test wp_user wp_password db $${WP_VER:-latest} &&
+        ./vendor/bin/phpunit --configuration phpunit.xml.dist
+      "

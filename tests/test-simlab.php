@@ -41,11 +41,21 @@ class SimlabTest extends WP_UnitTestCase {
     }
 
     public function test_admin_settings_menu_added() {
-        // Since admin menus are loaded on 'admin_menu' hook trigger
+        // Mock an administrator user
+        $admin_id = $this->factory->user->create( array( 'role' => 'administrator' ) );
+        wp_set_current_user( $admin_id );
+
+        // Trigger menu registration
         $plugin = new SL_SimlabPlugin();
         $plugin->simlab_admin_menu();
 
         global $submenu;
-        $this->assertArrayHasKey( 'simlab', $submenu, "Settings menu not registered" );
+        
+        // Ensure $submenu is at least an empty array if nothing was added
+        if ( null === $submenu ) {
+            $submenu = array();
+        }
+
+        $this->assertArrayHasKey( 'simlab', $submenu, "Settings menu not registered under parent slug 'simlab'" );
     }
 }

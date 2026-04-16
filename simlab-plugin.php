@@ -49,8 +49,10 @@ function sl_simlab_update_db_check() {
     $current_version = '1.0.2';
     if (get_option('sl_simlab_db_version') !== $current_version) {
         global $simlab_plugin;
-        $simlab_plugin->_install();
-        update_option('sl_simlab_db_version', $current_version);
+        if (null !== $simlab_plugin) {
+            $simlab_plugin->_install();
+            update_option('sl_simlab_db_version', $current_version);
+        }
     }
 }
 

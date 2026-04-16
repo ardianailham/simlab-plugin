@@ -1,5 +1,7 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) { exit; }
+if (!defined('ABSPATH')) {
+  exit;
+}
 require_once 'classes/sl-simlab-bahan-class.inc.php';
 require_once 'classes/sl-simlab-logbook-bahan-class.inc.php';
 
@@ -518,7 +520,7 @@ if (!is_user_logged_in()) {
                   <td>
                     <div class="d-flex justify-content-center gap-1">
                       <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&detail-bahan&id=<?= intval($alat['id']); ?>"
-                        class="btn btn-sm btn-outline-primary" title="Kelola Kemasan"><i class="fa fa-box"></i> Detail</a>
+                        class="btn btn-sm btn-outline-primary" title="Kelola Kemasan"><i class="fa fa-eye"></i> Detail</a>
 
                       <?php if (SL_SIMLAB_Auth::can_book()) { ?>
                         <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&addlog-bahan&id=<?= intval($alat['id']); ?>"
