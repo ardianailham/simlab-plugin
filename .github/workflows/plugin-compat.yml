@@ -80,21 +80,39 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: mysqli, mbstring
+          extensions: mysqli, mbstring, pdo_mysql
           tools: phpunit
           coverage: none
 
-      - name: Install Subversion (for WP test suite)
-        run: sudo apt-get install -y subversion
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y subversion
 
-      - name: Install WordPress test suite
+      - name: Wait for MySQL to be ready
         run: |
-          chmod +x bin/install-wp-tests.sh
-          bash bin/install-wp-tests.sh \
-            wordpress_test wp_user wp_password 127.0.0.1 ${{ matrix.wp }}
+          for i in {1..30}; do
+            if mysqladmin ping -h127.0.0.1 -u"wp_user" -p"wp_password" 2>/dev/null; then
+              echo "MySQL is ready"
+              exit 0
+            fi
+            echo "Waiting for MySQL... ($i/30)"
+            sleep 2
+          done
+          echo "MySQL failed to start"
+          exit 1
 
       - name: Install Composer dependencies
         run: composer install --no-progress --no-interaction
 
+      - name: Install WordPress test suite
+        run: |
+          bash bin/install-wp-tests.sh \
+            wordpress_test wp_user wp_password 127.0.0.1 ${{ matrix.wp }}
+        env:
+          WP_TESTS_DIR: /tmp/wordpress-tests-lib
+          WP_CORE_DIR: /tmp/wordpress
+
       - name: Run PHPUnit tests
         run: phpunit --configuration phpunit.xml.dist
+        env:
+          MYSQL_HOST: 127.0.0.1
+          MYSQL_PORT: 3306
