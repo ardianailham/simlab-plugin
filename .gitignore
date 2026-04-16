@@ -2,6 +2,7 @@
 phpunit.phar
 test_manual.php
 .phpunit.result.cache
+.phpunit.cache
 
 # Development tools & config
 vendor/
