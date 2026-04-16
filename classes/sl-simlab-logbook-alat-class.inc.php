@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 class SL_SIMLAB_LogbookAlatClass extends SL_SimlabPlugin
 {
@@ -62,18 +63,21 @@ class SL_SIMLAB_LogbookAlatClass extends SL_SimlabPlugin
   // Tambah Log Pinjam Alat
   public function addLogAlat($data)
   {
-    // Ubah data waktu ke Unix timestamp
-    $start_ts = strtotime($data['start_date']);
-    $end_ts   = strtotime($data['end_date']);
+    // Ubah data waktu ke Unix timestamp (menggunakan timezone WordPress)
+    $wp_tz = wp_timezone();
+    $start_dt = new DateTime($data['start_date'], $wp_tz);
+    $end_dt = new DateTime($data['end_date'], $wp_tz);
+    $start_ts = $start_dt->getTimestamp();
+    $end_ts = $end_dt->getTimestamp();
 
     // cek apakah jadwal yang dimasukkan benar
     if (!$start_ts || !$end_ts || $end_ts <= $start_ts) {
-?>
+      ?>
       <script type="text/javascript">
         alert("Tanggal yang dimasukkan salah!");
         history.back();
       </script>
-<?php
+      <?php
       return 0;
     }
 
@@ -83,9 +87,9 @@ class SL_SIMLAB_LogbookAlatClass extends SL_SimlabPlugin
     // Get overlapping bookings with status 5 (Accepted) or 1 (Ongoing) or 3 (Pending)
     // Actually, we should probably consider anything that isn't Rejected (4) or Completed (2) as "taking up space"
     // For now, let's follow the existing pattern but fix the quantity check.
-    
+
     $overlapping = $this->getLogAlatScheduleByAlat($id_alat, $start_ts, $end_ts);
-    
+
     // Get total stock
     $infoalat = new SL_SIMLAB_AlatClass;
     $alat_data = $infoalat->getAlatById($id_alat);
@@ -93,38 +97,39 @@ class SL_SIMLAB_LogbookAlatClass extends SL_SimlabPlugin
 
     // Calculate max concurrent usage during the requested interval [start_ts, end_ts]
     $max_concurrent = 0;
-    
+
     // We check usage at the start of our booking, and then at every event that starts within our booking
     $check_points = [$start_ts];
-    foreach($overlapping as $res) {
-        if ($res['start_date'] > $start_ts && $res['start_date'] < $end_ts) {
-            $check_points[] = $res['start_date'];
-        }
+    foreach ($overlapping as $res) {
+      if ($res['start_date'] > $start_ts && $res['start_date'] < $end_ts) {
+        $check_points[] = $res['start_date'];
+      }
     }
     $check_points = array_unique($check_points);
-    
-    foreach($check_points as $t) {
-        $usage_at_t = 0;
-        foreach($overlapping as $res) {
-            // A booking is active at time 't' if start <= t AND end > t
-            if ($res['start_date'] <= $t && $res['end_date'] > $t) {
-                // Only count Approved or Pending or Ongoing
-                if (in_array($res['status'], [1, 3, 5])) {
-                    $usage_at_t += intval($res['qty']);
-                }
-            }
+
+    foreach ($check_points as $t) {
+      $usage_at_t = 0;
+      foreach ($overlapping as $res) {
+        // A booking is active at time 't' if start <= t AND end > t
+        if ($res['start_date'] <= $t && $res['end_date'] > $t) {
+          // Only count Approved or Pending or Ongoing
+          if (in_array($res['status'], [1, 3, 5])) {
+            $usage_at_t += intval($res['qty']);
+          }
         }
-        if ($usage_at_t > $max_concurrent) $max_concurrent = $usage_at_t;
+      }
+      if ($usage_at_t > $max_concurrent)
+        $max_concurrent = $usage_at_t;
     }
 
     if ($max_concurrent + $qty_requested <= $total_stock) {
       $values = array(
-        'id_alat'    => $id_alat,
-        'user_id'    => intval($data['user_id']),
-        'qty'        => $qty_requested,
+        'id_alat' => $id_alat,
+        'user_id' => get_current_user_id(),
+        'qty' => $qty_requested,
         'start_date' => $start_ts,
-        'end_date'   => $end_ts,
-        'status'     => 5 // Default to Accepted
+        'end_date' => $end_ts,
+        'status' => 5 // Default to Accepted
       );
       $results = $this->db->insert(
         $this->db->prefix . $this->table,
@@ -133,22 +138,22 @@ class SL_SIMLAB_LogbookAlatClass extends SL_SimlabPlugin
 
       if ($results === false) {
         $error = $this->db->last_error;
-?>
+        ?>
         <script type="text/javascript">
-          alert("Gagal menyimpan ke database! Error: <?= esc_js($error); ?>");
+          alert("Gagal menyimpan ke database! Silakan coba lagi atau hubungi administrator.");
           history.back();
         </script>
-<?php
+        <?php
         return 0;
       }
       return $results;
     } else {
-?>
+      ?>
       <script type="text/javascript">
-        alert("Jadwal Penuh atau Stok Tidak Mencukupi pada waktu tersebut! \n\nMaksimal penggunaan bersamaan: " + <?= $max_concurrent; ?> + " dari " + <?= $total_stock; ?> + " unit.");
+        alert("Jadwal Penuh atau Stok Tidak Mencukupi pada waktu tersebut! \n\nMaksimal penggunaan bersamaan: " + <?= intval($max_concurrent); ?> + " dari " + <?= intval($total_stock); ?> + " unit.");
         history.back();
       </script>
-<?php
+      <?php
       return 0;
     }
   }

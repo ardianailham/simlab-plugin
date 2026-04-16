@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) { exit; }
 require_once 'classes/sl-simlab-alat-class.inc.php';
 require_once 'classes/sl-simlab-logbook-alat-class.inc.php';
 
@@ -41,7 +42,7 @@ if (!is_user_logged_in()) {
       if ($count !== false) {
 ?>
         <script type="text/javascript">
-          alert('<?= $count; ?> Data Berhasil Diimport');
+          alert('<?= intval($count); ?> Data Berhasil Diimport');
           document.location = '?page=<?= esc_js($obj->plugin_slug . $obj->menu_slug); ?>';
         </script>
 <?php
@@ -188,7 +189,7 @@ if (!is_user_logged_in()) {
               <input type="hidden" name="action_type" value="submit-log-alat">
               <input type="hidden" name="submit-log-alat" value="1">
               <input type="hidden" name="id_alat" value="<?= intval($data['id']); ?>">
-              <input type="hidden" name="user_id" value="<?= get_current_user_id(); ?>">
+
               <div class="row">
                 <div class="col-md-6 mb-3">
                   <label class="form-label">Nama Alat</label>
@@ -226,8 +227,9 @@ if (!is_user_logged_in()) {
 <?php
   /* ── DELETE ──────────────────────────────────────────────────────────── */
   } elseif (isset($_GET['hapus-alat'])) {
-    if (!SL_SIMLAB_Auth::is_admin()) {
-      wp_die(__('You do not have permission to perform this action.'));
+    check_admin_referer('sl_hapus_alat_' . intval($_GET['id']));
+    if (!is_user_logged_in() || !SL_SIMLAB_Auth::is_admin()) {
+      wp_die(__('You do not have permission to access this page.'));
     }
     $hapus = $obj->hapusAlat(intval($_GET['id']));
     if ($hapus > 0) {
@@ -338,7 +340,7 @@ if (!is_user_logged_in()) {
                       <?php if (SL_SIMLAB_Auth::is_admin()) { ?>
                         <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&ubah-alat&id=<?= intval($alat['id']); ?>"
                            class="btn btn-sm btn-warning" title="Edit"><i class="fa fa-pencil"></i> Edit</a>
-                        <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&hapus-alat&id=<?= intval($alat['id']); ?>"
+                        <a href="<?= wp_nonce_url('?page=' . esc_attr($obj->plugin_slug . $obj->menu_slug) . '&hapus-alat&id=' . intval($alat['id']), 'sl_hapus_alat_' . intval($alat['id'])); ?>"
                            class="btn btn-sm btn-danger"
                            onclick="return confirm('Apakah Anda yakin ingin menghapus alat ini?');" title="Hapus"><i class="fa fa-trash"></i> Delete</a>
                       <?php } ?>

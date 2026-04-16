@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) { exit; }
 if (!current_user_can('manage_options')) {
   wp_die('Unauthorized');
 }
@@ -9,6 +10,7 @@ if ($options == false) $options = array('daftar-alat' => '', 'daftar-bahan' => '
 // Handle individual saves
 if (isset($_POST['save_setting'])) {
   $key = sanitize_text_field($_POST['setting_key']);
+  check_admin_referer('sl_save_setting_' . $key);
   $value = esc_url_raw($_POST['setting_value']);
   
   if (array_key_exists($key, $options) || $key === 'user-api-url') {
@@ -42,7 +44,8 @@ SL_SimlabPlugin::admin_header('Settings', 'fa-cog');
       foreach ($settings_fields as $key => $field): 
       ?>
       <form method="POST" class="row mb-4 align-items-center">
-        <input type="hidden" name="setting_key" value="<?= $key ?>">
+        <?php wp_nonce_field('sl_save_setting_' . $key); ?>
+        <input type="hidden" name="setting_key" value="<?= esc_attr($key) ?>">
         <div class="col-md-9">
           <div class="form-floating">
             <input type="url" class="form-control shadow-none" id="<?= $field['id'] ?>" name="setting_value" placeholder="<?= $field['label'] ?>" value="<?= isset($options[$key]) ? esc_attr($options[$key]) : '' ?>">

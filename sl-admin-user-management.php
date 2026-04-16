@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 if (!SL_SIMLAB_Auth::is_admin()) {
     wp_die('Unauthorized');
@@ -11,17 +12,19 @@ SL_SimlabPlugin::admin_header('User Management', 'fa-users');
 
 /* ── ROLE UPDATE ─────────────────────────────────────────────────────────── */
 if (isset($_POST['update_role'])) {
+    check_admin_referer('sl_update_user_role');
     $user_id = intval($_POST['user_id']);
     $role_id = intval($_POST['role_id']);
     SL_SIMLAB_Auth::set_user_role($user_id, $role_id);
     echo '<div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-            User role configuration updated for <strong>' . get_userdata($user_id)->display_name . '</strong>.
+            User role configuration updated for <strong>' . esc_html(get_userdata($user_id)->display_name) . '</strong>.
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>';
 }
 
 /* ── API SYNC ─────────────────────────────────────────────────────────────── */
 if (isset($_POST['sync_api'])) {
+    check_admin_referer('sl_sync_api');
     if (!empty($api_url)) {
         $response = wp_remote_get($api_url);
         if (is_wp_error($response)) {
@@ -62,6 +65,7 @@ $roles = SL_SIMLAB_Auth::get_roles();
         <div class="d-flex justify-content-between align-items-center mb-4">
             <p class="text-muted mb-0">Kelola dan tentukan peran akses SIMLAB bagi setiap pengguna WordPress.</p>
             <form method="POST">
+                <?php wp_nonce_field('sl_sync_api'); ?>
                 <button type="submit" name="sync_api" class="btn btn-info text-white shadow-sm">
                     <i class="fa fa-refresh me-1"></i> Sync from External API
                 </button>
@@ -94,7 +98,8 @@ $roles = SL_SIMLAB_Auth::get_roles();
                             </td>
                             <td>
                                 <form method="POST" class="d-flex gap-2">
-                                    <input type="hidden" name="user_id" value="<?= $user->ID; ?>">
+                                    <?php wp_nonce_field('sl_update_user_role'); ?>
+                                    <input type="hidden" name="user_id" value="<?= intval($user->ID); ?>">
                                     <select name="role_id" class="form-select form-select-sm shadow-none">
                                         <?php foreach ($roles as $id => $name) : ?>
                                             <option value="<?= $id; ?>" <?= $current_role === $id ? 'selected' : ''; ?>>
