@@ -8,7 +8,7 @@ require_once 'classes/sl-simlab-logbook-bahan-class.inc.php';
 $user = get_current_user();
 
 if (!is_user_logged_in()) {
-  ?>
+?>
   <div class="row">
     <h3>Silakan Login Terlebih dahulu atau Daftar apabila anda belum memiliki akun</h3>
   </div>
@@ -46,12 +46,26 @@ if (!is_user_logged_in()) {
     }
   }
 
+  if (isset($_POST['restock-kemasan']) && check_admin_referer('sl_restock_kemasan_action')) {
+    if (!SL_SIMLAB_Auth::is_admin()) {
+      wp_die('No permission');
+    }
+    $id_kemasan = intval($_POST['id_kemasan']);
+    $tambah = floatval(str_replace(',', '.', $_POST['tambah_stok']));
+    $id_bahan = intval($_POST['id_bahan']);
+    if ($obj->restockKemasan($id_kemasan, $tambah)) {
+      echo "<script>alert('Stok berhasil diupdate!'); document.location = '?page=" . esc_js($obj->plugin_slug . $obj->menu_slug) . "&detail-bahan&id=" . $id_bahan . "';</script>";
+    } else {
+      echo "<script>alert('Gagal update stok!'); history.back();</script>";
+    }
+  }
+
   /* ── DETAIL BAHAN & KEMASAN ─────────────────────────────────────────── */
   if (isset($_GET['detail-bahan'])) {
     $id = intval($_GET['id']);
     $data = $obj->getBahanById($id);
     $kemasans = $obj->getKemasanByBahan($id);
-    ?>
+  ?>
     <div class="row d-flex justify-content-center">
       <div class="col-lg-10">
         <div class="card shadow-sm mb-4">
@@ -179,7 +193,7 @@ if (!is_user_logged_in()) {
                   <tr>
                     <td colspan="6" class="text-center text-muted">Belum ada kemasan yang diregistrasikan.</td>
                   </tr>
-                <?php else:
+                  <?php else:
                   foreach ($kemasans as $kem): ?>
                     <tr>
                       <td><strong><?= esc_html($kem['label_kemasan']) ?></strong></td>
@@ -199,13 +213,35 @@ if (!is_user_logged_in()) {
                       <td><small><?= esc_html($kem['catatan_kondisi']) ?></small></td>
                       <?php if (SL_SIMLAB_Auth::is_admin()): ?>
                         <td>
+                          <button class="btn btn-warning btn-sm" title="Restock"
+                            onclick="toggleRestockForm(<?= intval($kem['id']) ?>)"><i class="fa fa-plus"></i> Restock</button>
                           <a href="<?= wp_nonce_url('?page=' . esc_attr($obj->plugin_slug . $obj->menu_slug) . '&hapus-kemasan&id_kemasan=' . intval($kem['id']) . '&id_bahan=' . intval($data['id']), 'sl_hapus_kemasan_' . intval($kem['id'])); ?>"
                             onclick="return confirm('Yakin ingin menghapus kemasan ini? Riwayat logbook yang terkait kemasan ini akan bermasalah jika ada.')"
                             class="btn btn-danger btn-sm" title="Hapus Kemasan"><i class="fa fa-trash"></i></a>
                         </td>
                       <?php endif; ?>
                     </tr>
-                  <?php endforeach; endif; ?>
+                    <?php if (SL_SIMLAB_Auth::is_admin()): ?>
+                      <tr id="restock-form-<?= intval($kem['id']) ?>" style="display:none;">
+                        <td colspan="6">
+                          <form method="post" class="row g-2 align-items-center">
+                            <?php wp_nonce_field('sl_restock_kemasan_action', '_wpnonce'); ?>
+                            <input type="hidden" name="id_kemasan" value="<?= intval($kem['id']) ?>">
+                            <input type="hidden" name="id_bahan" value="<?= intval($data['id']) ?>">
+                            <div class="col-md-4">
+                              <label class="form-label small">Tambah Stok (<?= esc_html($kem['satuan']) ?>)</label>
+                              <input type="number" step="any" name="tambah_stok" class="form-control form-control-sm" required>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                              <button type="submit" name="restock-kemasan" class="btn btn-success btn-sm me-2"><i class="fa fa-save"></i> Update</button>
+                              <button type="button" class="btn btn-secondary btn-sm" onclick="toggleRestockForm(<?= intval($kem['id']) ?>)">Batal</button>
+                            </div>
+                          </form>
+                        </td>
+                      </tr>
+                    <?php endif; ?>
+                <?php endforeach;
+                endif; ?>
               </tbody>
             </table>
           </div>
@@ -213,7 +249,18 @@ if (!is_user_logged_in()) {
       </div>
     </div>
 
-    <?php
+    <script type="text/javascript">
+      function toggleRestockForm(id) {
+        var form = document.getElementById('restock-form-' + id);
+        if (form.style.display === 'none' || form.style.display === '') {
+          form.style.display = 'table-row';
+        } else {
+          form.style.display = 'none';
+        }
+      }
+    </script>
+
+  <?php
     /* ── BOOKING/USAGE ─────────────────────────────────────────────────── */
   } elseif (isset($_GET['addlog-bahan'])) {
     $id = intval($_GET['id']);
@@ -225,7 +272,7 @@ if (!is_user_logged_in()) {
     });
 
     $time = $obj->getTime();
-    ?>
+  ?>
     <div class="row d-flex justify-content-center">
       <div class="col-lg-8">
         <div class="card shadow-sm">
@@ -295,11 +342,11 @@ if (!is_user_logged_in()) {
       </div>
     </div>
 
-    <?php
+  <?php
     /* ── EDIT BAHAN ──────────────────────────────────────────────────────── */
   } elseif (isset($_GET['ubah-bahan'])) {
     $data = $obj->getBahanById(intval($_GET['id']));
-    ?>
+  ?>
     <div class="row d-flex justify-content-center">
       <div class="col-lg-8">
         <div class="card shadow-sm">
@@ -352,7 +399,7 @@ if (!is_user_logged_in()) {
       </div>
     </div>
 
-    <?php
+  <?php
     /* ── DELETE ──────────────────────────────────────────────────────────── */
   } elseif (isset($_GET['hapus-bahan'])) {
     check_admin_referer('sl_hapus_bahan_' . intval($_GET['id']));
@@ -405,7 +452,7 @@ if (!is_user_logged_in()) {
     }
 
     $data = $obj->getBahan();
-    ?>
+  ?>
     <div class="row">
       <div class="col-lg-12">
 
@@ -417,7 +464,7 @@ if (!is_user_logged_in()) {
                   class="fa fa-plus me-1"></i> Katalog Bahan Baru</button>
               <button class="btn btn-info text-white shadow-sm"
                 onclick="var t=document.getElementById('tambah-bahan'),i=document.getElementById('import-bahan'); if(i.style.display=='none'){i.style.display='block';t.style.display='none';}else{i.style.display='none';} return false;"><i
-                  class="fa fa-upload me-1"></i> Import CSV Lama</button>
+                  class="fa fa-upload me-1"></i> Import Bahan (CSV)</button>
               <a href="<?= wp_nonce_url(admin_url('admin.php?page=' . $obj->plugin_slug . $obj->menu_slug . '&action=export-bahan'), 'sl_export_bahan'); ?>"
                 class="btn btn-success shadow-sm"><i class="fa fa-download me-1"></i> Export 2-Level CSV</a>
             </div>
@@ -514,8 +561,18 @@ if (!is_user_logged_in()) {
                       class="text-muted"><?= esc_html($alat['Alias']); ?></small></td>
                   <td><span class="badge bg-secondary"><?= esc_html($alat['Kategori'] ?: '-'); ?></span></td>
                   <td><?= esc_html($alat['Merk']); ?></td>
-                  <td><span
-                      class="badge bg-light text-dark border"><?= esc_html($alat['StokTotal'] . ' ' . $alat['Satuan_Dasar']); ?></span>
+                  <td>
+                    <?php
+                    $stok = floatval($alat['StokTotal']);
+                    $max = floatval($alat['KapasitasMax']);
+                    $badge_class = 'bg-light text-dark border';
+                    if ($stok <= 0) {
+                      $badge_class = 'bg-danger';
+                    } elseif ($max > 0 && $stok <= 0.2 * $max) {
+                      $badge_class = 'bg-warning text-dark';
+                    }
+                    ?>
+                    <span class="badge <?= $badge_class ?>"><?= esc_html($alat['StokTotal'] . ' ' . $alat['Satuan_Dasar']); ?></span>
                   </td>
                   <td>
                     <div class="d-flex justify-content-center gap-1">
@@ -564,9 +621,11 @@ if (!is_user_logged_in()) {
       }
     </script>
 
-    <?php
+  <?php
   } // end else (list)
+  ?>
 
+<?php
   SL_SimlabPlugin::admin_footer();
 } // end is_user_logged_in
 ?>

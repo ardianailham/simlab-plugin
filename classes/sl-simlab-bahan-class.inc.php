@@ -1,5 +1,7 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) { exit; }
+if (! defined('ABSPATH')) {
+  exit;
+}
 
 class SL_SIMLAB_BahanClass extends SL_SimlabPlugin
 {
@@ -25,9 +27,10 @@ class SL_SIMLAB_BahanClass extends SL_SimlabPlugin
   {
     $t_bahan = $this->db->prefix . $this->table;
     $t_kemasan = $this->db->prefix . 'sl_simlab_bahan_kemasan';
-    
+
     $query = "SELECT b.id, b.Nama_Bahan, b.Alias, b.Kategori, b.Merk, b.Satuan_Dasar, b.created_at, 
-              IFNULL(SUM(k.jumlah_tersedia), 0) as StokTotal 
+              IFNULL(SUM(k.jumlah_tersedia), 0) as StokTotal,
+              IFNULL(SUM(k.kapasitas_awal), 0) as KapasitasMax 
               FROM {$t_bahan} b 
               LEFT JOIN {$t_kemasan} k ON b.id = k.id_bahan 
               GROUP BY b.id";
@@ -40,7 +43,7 @@ class SL_SIMLAB_BahanClass extends SL_SimlabPlugin
   {
     $t_bahan = $this->db->prefix . $this->table;
     $t_kemasan = $this->db->prefix . 'sl_simlab_bahan_kemasan';
-    
+
     $query = $this->db->prepare("SELECT b.*, IFNULL(SUM(k.jumlah_tersedia), 0) as TotalJumlah 
               FROM {$t_bahan} b 
               LEFT JOIN {$t_kemasan} k ON b.id = k.id_bahan 
@@ -86,7 +89,7 @@ class SL_SIMLAB_BahanClass extends SL_SimlabPlugin
   {
     $table = $this->db->prefix . $this->table;
     $where = array('id' => $id);
-    
+
     // Cascade hapus kemasan
     $t_kemasan = $this->db->prefix . 'sl_simlab_bahan_kemasan';
     $this->db->delete($t_kemasan, array('id_bahan' => $id), array('%d'));
@@ -96,7 +99,7 @@ class SL_SIMLAB_BahanClass extends SL_SimlabPlugin
   }
 
   // --- KEMASAN FUNCTIONS ---
-  
+
   public function getKemasanByBahan($id_bahan)
   {
     $t_kemasan = $this->db->prefix . 'sl_simlab_bahan_kemasan';
@@ -141,12 +144,27 @@ class SL_SIMLAB_BahanClass extends SL_SimlabPlugin
   {
     $table = $this->db->prefix . 'sl_simlab_bahan_kemasan';
     $kemasan = $this->getKemasanById($id_kemasan);
-    
+
     if (!$kemasan) return false;
-    
+
     $Jumlah = $kemasan['jumlah_tersedia'] - $ambil;
     $is_empty = ($Jumlah <= 0) ? 1 : 0;
-    
+
+    $query = $this->db->prepare("UPDATE {$table} SET jumlah_tersedia = %f, is_empty = %d WHERE id = %d", $Jumlah, $is_empty, $id_kemasan);
+    return $this->db->query($query);
+  }
+
+  // restock kemasan
+  public function restockKemasan($id_kemasan, $tambah)
+  {
+    $table = $this->db->prefix . 'sl_simlab_bahan_kemasan';
+    $kemasan = $this->getKemasanById($id_kemasan);
+
+    if (!$kemasan) return false;
+
+    $Jumlah = $kemasan['jumlah_tersedia'] + $tambah;
+    $is_empty = ($Jumlah <= 0) ? 1 : 0;
+
     $query = $this->db->prepare("UPDATE {$table} SET jumlah_tersedia = %f, is_empty = %d WHERE id = %d", $Jumlah, $is_empty, $id_kemasan);
     return $this->db->query($query);
   }
