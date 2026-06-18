@@ -22,7 +22,7 @@ class SL_SIMLAB_ExportImportClass extends SL_SimlabPlugin
     $data = $alat_obj->getAlat();
 
     header('Content-Type: text/csv; charset=utf-8');
-    header('Content-Disposition: attachment; filename=sl_simlab_alat_' . date('Y-m-d') . '.csv');
+    header('Content-Disposition: attachment; filename=sl_simlab_alat_' . wp_date('Y-m-d') . '.csv');
 
     $output = fopen('php://output', 'w');
     fputcsv($output, array('ID', 'Nama Alat', 'Merk', 'Qty'));
@@ -43,7 +43,7 @@ class SL_SIMLAB_ExportImportClass extends SL_SimlabPlugin
     }
 
     header('Content-Type: text/csv; charset=utf-8');
-    header('Content-Disposition: attachment; filename=sl_simlab_bahan_' . date('Y-m-d') . '.csv');
+    header('Content-Disposition: attachment; filename=sl_simlab_bahan_' . wp_date('Y-m-d') . '.csv');
 
     $output = fopen('php://output', 'w');
     fputcsv($output, array('ID', 'Nama Bahan', 'Alias', 'Kategori', 'Label Botol', 'Jumlah', 'Satuan', 'Merk', 'Exp', 'Letak'));

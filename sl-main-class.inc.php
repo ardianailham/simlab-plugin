@@ -1,5 +1,7 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) { exit; }
+if (! defined('ABSPATH')) {
+  exit;
+}
 class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
 {
   private $plugin_name = 'SIMLAB';
@@ -40,7 +42,7 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
 ?>
     <a href="<?= esc_url($option['daftar-alat']); ?>" id="buttonDaftarAlat" class="ms-3"></a>
     <a href="<?= esc_url($option['daftar-bahan']); ?>" id="buttonDaftarBahan" class="ms-3"></a>
-<?php
+  <?php
   }
   public function _install()
   {
@@ -219,7 +221,7 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
   }
   public static function admin_header($title, $icon = 'fa-dashboard')
   {
-?>
+  ?>
     <div class="simlab-admin-wrapper mt-4 px-3">
       <div class="container-fluid">
         <div class="row mb-4 align-items-center">
@@ -230,25 +232,25 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
           </div>
           <div class="col-md-4 text-md-end mt-2 mt-md-0">
             <div class="d-inline-flex align-items-center bg-white rounded-pill px-3 py-2 shadow-sm border">
-               <span class="dot bg-success me-2" style="width: 8px; height: 8px; border-radius: 50%;"></span>
-               <small class="text-muted fw-bold">SIMLAB</small>
-               <span class="mx-2 text-muted">|</span>
-               <small class="text-primary fw-bold">v1.0.1</small>
+              <span class="dot bg-success me-2" style="width: 8px; height: 8px; border-radius: 50%;"></span>
+              <small class="text-muted fw-bold">SIMLAB</small>
+              <span class="mx-2 text-muted">|</span>
+              <small class="text-primary fw-bold">v1.0.1</small>
             </div>
           </div>
         </div>
         <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px; overflow: hidden;">
           <div class="card-body p-4">
-    <?php
-  }
+          <?php
+        }
 
-  public static function admin_footer()
-  {
-    ?>
+        public static function admin_footer()
+        {
+          ?>
           </div>
         </div>
         <div class="d-flex justify-content-between align-items-center px-1 py-3 mt-2 border-top">
-          <p class="mb-0 text-muted small">&copy; <?= date('Y') ?> <strong>SIMLAB</strong>. Built for excellence in lab management.</p>
+          <p class="mb-0 text-muted small">&copy; <?= wp_date('Y') ?> <strong>SIMLAB</strong>. Built for excellence in lab management.</p>
           <div class="social-links d-flex gap-3">
             <a href="#" class="text-muted"><i class="fa fa-github"></i></a>
             <a href="#" class="text-muted"><i class="fa fa-globe"></i></a>
@@ -257,17 +259,62 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
       </div>
     </div>
     <style>
-      .simlab-admin-wrapper { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-      .bg-primary { background-color: #0d6efd !important; }
-      .text-primary { color: #0d6efd !important; }
-      .simlab-admin-wrapper .card { transition: all 0.3s ease; border-radius: 12px !important; max-width: none !important; width: 100% !important; }
-      .btn-primary { background-color: #0d6efd; border-color: #0d6efd; border-radius: 8px; padding: 10px 20px; font-weight: 600; }
-      .btn-primary:hover { background-color: #0b5ed7; border-color: #0a58ca; }
-      .form-control, .form-select { border-radius: 8px; border: 1px solid #dee2e6; padding: 12px; }
-      .form-control:focus { box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15); border-color: #86b7fe; }
-      .table th { background-color: #f8f9fa; border-bottom-width: 1px; color: #495057; font-weight: 600; }
-      .badge { border-radius: 6px; font-weight: 600; }
+      .simlab-admin-wrapper {
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      }
+
+      .bg-primary {
+        background-color: #0d6efd !important;
+      }
+
+      .text-primary {
+        color: #0d6efd !important;
+      }
+
+      .simlab-admin-wrapper .card {
+        transition: all 0.3s ease;
+        border-radius: 12px !important;
+        max-width: none !important;
+        width: 100% !important;
+      }
+
+      .btn-primary {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 600;
+      }
+
+      .btn-primary:hover {
+        background-color: #0b5ed7;
+        border-color: #0a58ca;
+      }
+
+      .form-control,
+      .form-select {
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        padding: 12px;
+      }
+
+      .form-control:focus {
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+        border-color: #86b7fe;
+      }
+
+      .table th {
+        background-color: #f8f9fa;
+        border-bottom-width: 1px;
+        color: #495057;
+        font-weight: 600;
+      }
+
+      .badge {
+        border-radius: 6px;
+        font-weight: 600;
+      }
     </style>
 <?php
-  }
-}
+        }
+      }

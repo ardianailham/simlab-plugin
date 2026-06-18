@@ -1,16 +1,22 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) { exit; }
+if (! defined('ABSPATH')) {
+  exit;
+}
 
 class SL_SIMLAB_BaseClass
 {
 
-  public function getTime()
+  public function getTime($timezone = null)
   {
-    $now_ts = time();
-    $then_ts = $now_ts + HOUR_IN_SECONDS;
-    $now = wp_date("Y-m-d\TH:i", $now_ts);
-    $then = wp_date("Y-m-d\TH:i", $then_ts);
-    return array($now, $then);
+    $tz = $timezone ? new DateTimeZone($timezone) : wp_timezone();
+    $now = new DateTime('now', $tz);
+    $then = clone $now;
+    $then->modify('+1 hour');
+
+    return [
+      $now->format('Y-m-d\TH:i'),
+      $then->format('Y-m-d\TH:i'),
+    ];
   }
 
   /** installation functions */

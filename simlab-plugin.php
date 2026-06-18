@@ -8,9 +8,12 @@
  * Version: 1.0.1
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-    exit; // Exit if accessed directly.
+if (! defined('ABSPATH')) {
+  exit; // Exit if accessed directly.
 }
+
+// Ensure PHP default timezone is set to Jakarta (UTC+7)
+date_default_timezone_set('Asia/Jakarta');
 
 define('SL_SIMLAB_PATH', plugin_dir_url(__FILE__));
 
@@ -45,25 +48,27 @@ add_action('admin_init', 'sl_simlab_handle_export');
 SL_SIMLAB_PubChemClass::register_ajax();
 
 add_action('plugins_loaded', 'sl_simlab_update_db_check');
-function sl_simlab_update_db_check() {
-    $current_version = '1.0.2';
-    if (get_option('sl_simlab_db_version') !== $current_version) {
-        global $simlab_plugin;
-        if (null !== $simlab_plugin) {
-            $simlab_plugin->_install();
-            update_option('sl_simlab_db_version', $current_version);
-        }
+function sl_simlab_update_db_check()
+{
+  $current_version = '1.0.2';
+  if (get_option('sl_simlab_db_version') !== $current_version) {
+    global $simlab_plugin;
+    if (null !== $simlab_plugin) {
+      $simlab_plugin->_install();
+      update_option('sl_simlab_db_version', $current_version);
     }
+  }
 }
 
-function sl_simlab_handle_export() {
-    global $simlab_export_import;
-    if (isset($_GET['action']) && $_GET['action'] == 'export-alat' && check_admin_referer('sl_export_alat')) {
-        $simlab_export_import->exportAlat();
-    }
-    if (isset($_GET['action']) && $_GET['action'] == 'export-bahan' && check_admin_referer('sl_export_bahan')) {
-        $simlab_export_import->exportBahan();
-    }
+function sl_simlab_handle_export()
+{
+  global $simlab_export_import;
+  if (isset($_GET['action']) && $_GET['action'] == 'export-alat' && check_admin_referer('sl_export_alat')) {
+    $simlab_export_import->exportAlat();
+  }
+  if (isset($_GET['action']) && $_GET['action'] == 'export-bahan' && check_admin_referer('sl_export_bahan')) {
+    $simlab_export_import->exportBahan();
+  }
 }
 
 // Url redirects
@@ -95,6 +100,10 @@ function sl_simlab_scripts()
 {
   wp_register_script('sl_simlab_bootstrap_js', SL_SIMLAB_PATH . '/js/bootstrap.js', array('jquery'), '1.0', true);
   wp_enqueue_script('sl_simlab_bootstrap_js');
+  wp_localize_script('sl_simlab_bootstrap_js', 'sl_simlab_vars', array(
+    'timezone' => 'Asia/Jakarta',
+    'utc_offset_seconds' => 7 * 3600,
+  ));
 
   // PubChem integration script
   wp_register_script(
