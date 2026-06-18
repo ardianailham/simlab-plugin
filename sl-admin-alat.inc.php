@@ -1,7 +1,11 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) { exit; }
+if (! defined('ABSPATH')) {
+  exit;
+}
 require_once 'classes/sl-simlab-alat-class.inc.php';
 require_once 'classes/sl-simlab-logbook-alat-class.inc.php';
+
+$user = get_current_user();
 
 if (!is_user_logged_in()) {
 ?>
@@ -13,68 +17,68 @@ if (!is_user_logged_in()) {
     <a href="<?php echo esc_url(wp_login_url($current_url)); ?>" class="btn btn-primary me-1"><?php _e('Log in'); ?></a>
     <a href="<?php echo esc_url(wp_registration_url($current_url)); ?>" class="btn btn-success ms-1"><?php _e('Register'); ?></a>
   </div>
-<?php
+  <?php
 } else {
   $obj   = new SL_SIMLAB_AlatClass;
   $nonce = wp_create_nonce('sl_simlab_alat_action');
 
   /* ── HANDLE POST ACTIONS ─────────────────────────────────────────────── */
-  
+
   // 1. Handle Submit Booking Log
   if ((isset($_POST['submit-log-alat']) || (isset($_POST['action_type']) && $_POST['action_type'] === 'submit-log-alat')) && check_admin_referer('sl_simlab_alat_action') && SL_SIMLAB_Auth::can_book()) {
     $obj1   = new SL_SIMLAB_LogbookAlatClass;
     $addLog = $obj1->addLogAlat($_POST);
     if ($addLog > 0) {
-?>
+  ?>
       <script type="text/javascript">
         alert('Data Berhasil Ditambahkan');
         document.location = '?page=<?= esc_js($obj1->plugin_slug . $obj1->menu_slug); ?>';
       </script>
-<?php
+    <?php
       exit;
     }
   }
 
   // 2. Handle Import Alat
   if (isset($_POST['import-alat']) && check_admin_referer('sl_import_alat')) {
-      global $simlab_export_import;
-      $count = $simlab_export_import->importAlat($_FILES['file_csv']);
-      if ($count !== false) {
-?>
-        <script type="text/javascript">
-          alert('<?= intval($count); ?> Data Berhasil Diimport');
-          document.location = '?page=<?= esc_js($obj->plugin_slug . $obj->menu_slug); ?>';
-        </script>
-<?php
-        exit;
-      } else {
-?>
-        <script type="text/javascript">
-          alert('Data Gagal Diimport. Pastikan file benar.');
-          history.back();
-        </script>
-<?php
-        exit;
-      }
+    global $simlab_export_import;
+    $count = $simlab_export_import->importAlat($_FILES['file_csv']);
+    if ($count !== false) {
+    ?>
+      <script type="text/javascript">
+        alert('<?= intval($count); ?> Data Berhasil Diimport');
+        document.location = '?page=<?= esc_js($obj->plugin_slug . $obj->menu_slug); ?>';
+      </script>
+    <?php
+      exit;
+    } else {
+    ?>
+      <script type="text/javascript">
+        alert('Data Gagal Diimport. Pastikan file benar.');
+        history.back();
+      </script>
+    <?php
+      exit;
+    }
   }
 
   // 3. Handle Add Alat
   if (isset($_POST['submit-alat']) && check_admin_referer('sl_simlab_alat_action')) {
     if (empty($_POST['Nama_Alat']) || empty($_POST['Qty'])) {
-?>
+    ?>
       <script type="text/javascript">
         alert('Form yang anda masukkan tidak benar!');
         history.back();
       </script>
-<?php
+    <?php
       exit;
     } else {
       $obj->tambahAlat($_POST);
-?>
+    ?>
       <script type="text/javascript">
         document.location = '?page=<?= esc_js($obj->plugin_slug . $obj->menu_slug); ?>';
       </script>
-<?php
+    <?php
       exit;
     }
   }
@@ -82,19 +86,19 @@ if (!is_user_logged_in()) {
   // 4. Handle Edit Alat
   if (isset($_POST['ubah-alat']) && check_admin_referer('sl_simlab_alat_action')) {
     if ($obj->ubahAlat($_POST) > 0) {
-?>
+    ?>
       <script type="text/javascript">
         document.location = '?page=<?= esc_js($obj->plugin_slug . $obj->menu_slug); ?>';
       </script>
-<?php
+    <?php
       exit;
     } else {
-?>
+    ?>
       <script type="text/javascript">
         alert('Data Gagal Diubah');
         history.back();
       </script>
-<?php
+    <?php
       exit;
     }
   }
@@ -106,38 +110,47 @@ if (!is_user_logged_in()) {
     $id   = intval($_GET['id']);
     $data = $obj->getAlatById($id);
     if (!$data) {
-        echo "<div class='alert alert-danger'>Data alat tidak ditemukan!</div>";
-        return;
+      echo "<div class='alert alert-danger'>Data alat tidak ditemukan!</div>";
+      return;
     }
-?>
+    ?>
     <div class="row d-flex justify-content-center">
       <div class="col-lg-6">
         <div class="card shadow-sm">
           <div class="card-body">
             <h5 class="card-title fw-bold text-primary mb-3"><i class="fa fa-info-circle me-2"></i>Detail Alat</h5>
             <table class="table table-sm">
-              <tr><th width="30%">Nama Alat</th><td>: <?= esc_html($data['Nama_Alat']); ?></td></tr>
-              <tr><th>Merk</th><td>: <?= esc_html($data['Merk']); ?></td></tr>
-              <tr><th>Stok / Qty</th><td>: <span class="badge bg-info"><?= esc_html($data['Qty']); ?> Unit</span></td></tr>
+              <tr>
+                <th width="30%">Nama Alat</th>
+                <td>: <?= esc_html($data['Nama_Alat']); ?></td>
+              </tr>
+              <tr>
+                <th>Merk</th>
+                <td>: <?= esc_html($data['Merk']); ?></td>
+              </tr>
+              <tr>
+                <th>Stok / Qty</th>
+                <td>: <span class="badge bg-info"><?= esc_html($data['Qty']); ?> Unit</span></td>
+              </tr>
             </table>
             <div class="mt-4">
-               <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>" class="btn btn-secondary"><i class="fa fa-arrow-left me-1"></i> Kembali</a>
+              <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>" class="btn btn-secondary"><i class="fa fa-arrow-left me-1"></i> Kembali</a>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-<?php
-  /* ── EDIT ────────────────────────────────────────────────────────────── */
+  <?php
+    /* ── EDIT ────────────────────────────────────────────────────────────── */
   } elseif (isset($_GET['ubah-alat'])) {
     $id   = intval($_GET['id']);
     $data = $obj->getAlatById($id);
     if (!$data) {
-        echo "<div class='alert alert-danger'>Data alat tidak ditemukan!</div>";
-        return;
+      echo "<div class='alert alert-danger'>Data alat tidak ditemukan!</div>";
+      return;
     }
-?>
+  ?>
     <div class="row d-flex justify-content-center">
       <div class="col-lg-8">
         <div class="card shadow-sm">
@@ -168,17 +181,17 @@ if (!is_user_logged_in()) {
       </div>
     </div>
 
-<?php
-  /* ── BOOKING ─────────────────────────────────────────────────────────── */
+  <?php
+    /* ── BOOKING ─────────────────────────────────────────────────────────── */
   } elseif (isset($_GET['addlog-alat'])) {
     $id   = intval($_GET['id']);
     $data = $obj->getAlatById($id);
     if (!$data) {
-        echo "<div class='alert alert-danger'>Data alat tidak ditemukan!</div>";
-        return;
+      echo "<div class='alert alert-danger'>Data alat tidak ditemukan!</div>";
+      return;
     }
     $time = $obj->getTime();
-?>
+  ?>
     <div class="row d-flex justify-content-center">
       <div class="col-lg-8">
         <div class="card shadow-sm">
@@ -224,8 +237,8 @@ if (!is_user_logged_in()) {
       </div>
     </div>
 
-<?php
-  /* ── DELETE ──────────────────────────────────────────────────────────── */
+    <?php
+    /* ── DELETE ──────────────────────────────────────────────────────────── */
   } elseif (isset($_GET['hapus-alat'])) {
     check_admin_referer('sl_hapus_alat_' . intval($_GET['id']));
     if (!is_user_logged_in() || !SL_SIMLAB_Auth::is_admin()) {
@@ -233,25 +246,25 @@ if (!is_user_logged_in()) {
     }
     $hapus = $obj->hapusAlat(intval($_GET['id']));
     if ($hapus > 0) {
-?>
+    ?>
       <script type="text/javascript">
         alert('Data Berhasil Dihapus');
         document.location = '?page=<?= esc_js($obj->plugin_slug . $obj->menu_slug); ?>';
       </script>
-<?php
+    <?php
     } else {
-?>
+    ?>
       <script type="text/javascript">
         alert('Data Gagal Dihapus');
         history.back();
       </script>
-<?php
+    <?php
     }
 
-  /* ── LIST (default) ──────────────────────────────────────────────────── */
+    /* ── LIST (default) ──────────────────────────────────────────────────── */
   } else {
     $data = $obj->getAlat();
-?>
+    ?>
     <div class="row">
       <div class="col-lg-12">
 
@@ -319,7 +332,9 @@ if (!is_user_logged_in()) {
             <tbody>
               <?php $i = 1; ?>
               <?php if (empty($data)): ?>
-                <tr><td colspan="5" class="text-center py-4 text-muted">Belum ada data alat.</td></tr>
+                <tr>
+                  <td colspan="5" class="text-center py-4 text-muted">Belum ada data alat.</td>
+                </tr>
               <?php endif; ?>
               <?php foreach ($data as $alat) : ?>
                 <tr>
@@ -330,19 +345,19 @@ if (!is_user_logged_in()) {
                   <td>
                     <div class="d-flex justify-content-center gap-1">
                       <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&detail-alat&id=<?= intval($alat['id']); ?>"
-                         class="btn btn-sm btn-outline-primary" title="Detail"><i class="fa fa-eye"></i> Detail</a>
-                         
+                        class="btn btn-sm btn-outline-primary" title="Detail"><i class="fa fa-eye"></i> Detail</a>
+
                       <?php if (SL_SIMLAB_Auth::can_book()) { ?>
                         <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&addlog-alat&id=<?= intval($alat['id']); ?>"
                           class="btn btn-sm btn-success" title="Book"><i class="fa fa-calendar"></i> Book</a>
                       <?php } ?>
-                      
+
                       <?php if (SL_SIMLAB_Auth::is_admin()) { ?>
                         <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>&ubah-alat&id=<?= intval($alat['id']); ?>"
-                           class="btn btn-sm btn-warning" title="Edit"><i class="fa fa-pencil"></i> Edit</a>
+                          class="btn btn-sm btn-warning" title="Edit"><i class="fa fa-pencil"></i> Edit</a>
                         <a href="<?= wp_nonce_url('?page=' . esc_attr($obj->plugin_slug . $obj->menu_slug) . '&hapus-alat&id=' . intval($alat['id']), 'sl_hapus_alat_' . intval($alat['id'])); ?>"
-                           class="btn btn-sm btn-danger"
-                           onclick="return confirm('Apakah Anda yakin ingin menghapus alat ini?');" title="Hapus"><i class="fa fa-trash"></i> Delete</a>
+                          class="btn btn-sm btn-danger"
+                          onclick="return confirm('Apakah Anda yakin ingin menghapus alat ini?');" title="Hapus"><i class="fa fa-trash"></i> Delete</a>
                       <?php } ?>
                     </div>
                   </td>
@@ -376,7 +391,7 @@ if (!is_user_logged_in()) {
 
 <?php
   } // end else (list)
-  
+
   SL_SimlabPlugin::admin_footer();
 } // end is_user_logged_in
 ?>

@@ -23,7 +23,63 @@ if (!is_user_logged_in()) {
   $obj = new SL_SIMLAB_BahanClass;
   $nonce = wp_create_nonce('sl_simlab_bahan_action');
 
-  SL_SimlabPlugin::admin_header('Manajemen Bahan', 'fa-flask');
+  /* ── HANDLE POST ACTIONS ─────────────────────────────────────────────── */
+
+  // 1. Handle Submit Booking Log
+  if (isset($_POST['submit-log-bahan']) || (isset($_POST['action_type']) && $_POST['action_type'] === 'submit-log-bahan') && check_admin_referer('sl_simlab_bahan_action') && SL_SIMLAB_Auth::can_book()) {
+    $obj1 = new SL_SIMLAB_LogbookBahanClass;
+    $addLog = $obj1->addLogBahan($_POST);
+    if ($addLog > 0) {
+  ?>
+      <script type="text/javascript">
+        alert('Data Berhasil Ditambahkan');
+        document.location = '?page=<?= esc_js($obj1->plugin_slug . $obj1->menu_slug); ?>';
+      </script>
+    <?php
+      exit;
+    }
+  }
+
+  // 2. Handle Import Bahan
+  if (isset($_POST['import-bahan']) && check_admin_referer('sl_import_bahan')) {
+    global $simlab_export_import;
+    $count = $simlab_export_import->importBahan($_FILES['file_csv']);
+    if ($count !== false) {
+    ?>
+      <script type="text/javascript">
+        alert('<?= intval($count); ?> Data Berhasil Diimport');
+        document.location = '?page=<?= esc_js($obj->plugin_slug . $obj->menu_slug); ?>';
+      </script>
+    <?php
+      exit;
+    } else {
+    ?>
+      <script type="text/javascript">
+        alert('Data Gagal Diimport. Pastikan file benar.');
+        history.back();
+      </script>
+    <?php
+      exit;
+    }
+  }
+
+  // 3. Handle Add Bahan
+  if (isset($_POST['submit-bahan']) && check_admin_referer('sl_simlab_bahan_action')) {
+    if ($obj->tambahBahan($_POST)) {
+      echo "<script>alert('Katalog Bahan berhasil didaftarkan!'); document.location = '?page=" . esc_js($obj->plugin_slug . $obj->menu_slug) . "';</script>";
+    } else {
+      echo "<script>alert('Gagal menambah data!'); history.back();</script>";
+    }
+  }
+
+  // 4. Handle Edit Bahan
+  if (isset($_POST['ubah-bahan']) && check_admin_referer('sl_simlab_bahan_action')) {
+    if ($obj->ubahBahan($_POST) > 0) {
+      echo "<script>alert('Perubahan Katalog Bahan berhasil disimpan!'); document.location = '?page=" . esc_js($obj->plugin_slug . $obj->menu_slug) . "';</script>";
+    } else {
+      echo "<script>alert('Gagal disimpan (atau tidak ada yg berubah)!'); document.location = '?page=" . esc_js($obj->plugin_slug . $obj->menu_slug) . "';</script>";
+    }
+  }
 
   /* ── KEMASAN ACTION HANDLERS ─────────────────────────────────────────── */
   if (isset($_POST['tambah-kemasan']) && check_admin_referer('sl_kemasan_action')) {
@@ -60,12 +116,19 @@ if (!is_user_logged_in()) {
     }
   }
 
+  SL_SimlabPlugin::admin_header('Manajemen Bahan', 'fa-flask');
+
+
   /* ── DETAIL BAHAN & KEMASAN ─────────────────────────────────────────── */
   if (isset($_GET['detail-bahan'])) {
     $id = intval($_GET['id']);
     $data = $obj->getBahanById($id);
     $kemasans = $obj->getKemasanByBahan($id);
-  ?>
+    if (!$data) {
+      echo "<script>alert('Data tidak ditemukan!'); document.location = '?page=" . esc_js($obj->plugin_slug . $obj->menu_slug) . "';</script>";
+      return;
+    }
+    ?>
     <div class="row d-flex justify-content-center">
       <div class="col-lg-10">
         <div class="card shadow-sm mb-4">
@@ -261,6 +324,65 @@ if (!is_user_logged_in()) {
     </script>
 
   <?php
+
+    /* ── EDIT BAHAN ──────────────────────────────────────────────────────── */
+  } elseif (isset($_GET['ubah-bahan'])) {
+    $data = $obj->getBahanById(intval($_GET['id']));
+  ?>
+    <div class="row d-flex justify-content-center">
+      <div class="col-lg-8">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title fw-bold mb-4 text-warning"><i class="fa fa-edit me-2"></i>Ubah Katalog Bahan Utama</h5>
+            <form method="post">
+              <?php wp_nonce_field('sl_simlab_bahan_action', '_wpnonce'); ?>
+              <input type="hidden" name="id" value="<?= intval($data['id']); ?>">
+
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">Nama Bahan</label>
+                  <input type="text" class="form-control" name="Nama_Bahan" value="<?= esc_attr($data['Nama_Bahan']); ?>"
+                    required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Alias / Rumus</label>
+                  <input type="text" class="form-control" name="Alias" value="<?= esc_attr($data['Alias']); ?>">
+                </div>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col-md-4">
+                  <label class="form-label">Merk</label>
+                  <input type="text" class="form-control" name="Merk" value="<?= esc_attr($data['Merk']); ?>">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Kategori</label>
+                  <input type="text" class="form-control" name="Kategori" value="<?= esc_attr($data['Kategori']); ?>"
+                    placeholder="Reagen, BHP, dll">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Satuan Dasar Katalog</label>
+                  <input type="text" class="form-control" name="Satuan_Dasar"
+                    value="<?= esc_attr($data['Satuan_Dasar']); ?>">
+                </div>
+              </div>
+
+              <div class="alert alert-info py-2 small">Untuk merubah data stok spesifik dan expired date, silakan kembali
+                lalu masuk melalui tombol "Detail -> Kemasan".</div>
+
+              <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary" name="ubah-bahan" value="1"><i class="fa fa-save me-1"></i>
+                  Update Katalog Utama</button>
+                <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>" class="btn btn-secondary">Batal</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <?php
+
     /* ── BOOKING/USAGE ─────────────────────────────────────────────────── */
   } elseif (isset($_GET['addlog-bahan'])) {
     $id = intval($_GET['id']);
@@ -343,63 +465,6 @@ if (!is_user_logged_in()) {
     </div>
 
   <?php
-    /* ── EDIT BAHAN ──────────────────────────────────────────────────────── */
-  } elseif (isset($_GET['ubah-bahan'])) {
-    $data = $obj->getBahanById(intval($_GET['id']));
-  ?>
-    <div class="row d-flex justify-content-center">
-      <div class="col-lg-8">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title fw-bold mb-4 text-warning"><i class="fa fa-edit me-2"></i>Ubah Katalog Bahan Utama</h5>
-            <form method="post">
-              <?php wp_nonce_field('sl_simlab_bahan_action', '_wpnonce'); ?>
-              <input type="hidden" name="id" value="<?= intval($data['id']); ?>">
-
-              <div class="row mb-3">
-                <div class="col-md-6">
-                  <label class="form-label">Nama Bahan</label>
-                  <input type="text" class="form-control" name="Nama_Bahan" value="<?= esc_attr($data['Nama_Bahan']); ?>"
-                    required>
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Alias / Rumus</label>
-                  <input type="text" class="form-control" name="Alias" value="<?= esc_attr($data['Alias']); ?>">
-                </div>
-              </div>
-
-              <div class="row mb-3">
-                <div class="col-md-4">
-                  <label class="form-label">Merk</label>
-                  <input type="text" class="form-control" name="Merk" value="<?= esc_attr($data['Merk']); ?>">
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label">Kategori</label>
-                  <input type="text" class="form-control" name="Kategori" value="<?= esc_attr($data['Kategori']); ?>"
-                    placeholder="Reagen, BHP, dll">
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label">Satuan Dasar Katalog</label>
-                  <input type="text" class="form-control" name="Satuan_Dasar"
-                    value="<?= esc_attr($data['Satuan_Dasar']); ?>">
-                </div>
-              </div>
-
-              <div class="alert alert-info py-2 small">Untuk merubah data stok spesifik dan expired date, silakan kembali
-                lalu masuk melalui tombol "Detail -> Kemasan".</div>
-
-              <div class="d-flex gap-2 mt-4">
-                <button type="submit" class="btn btn-primary" name="ubah-bahan" value="1"><i class="fa fa-save me-1"></i>
-                  Update Katalog Utama</button>
-                <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>" class="btn btn-secondary">Batal</a>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  <?php
     /* ── DELETE ──────────────────────────────────────────────────────────── */
   } elseif (isset($_GET['hapus-bahan'])) {
     check_admin_referer('sl_hapus_bahan_' . intval($_GET['id']));
@@ -415,42 +480,6 @@ if (!is_user_logged_in()) {
 
     /* ── LIST (default) ──────────────────────────────────────────────────── */
   } else {
-
-    if (isset($_POST['import-bahan']) && check_admin_referer('sl_import_bahan')) {
-      global $simlab_export_import;
-      $count = $simlab_export_import->importBahan($_FILES['file_csv']);
-      if ($count !== false) {
-        echo "<script>alert('" . intval($count) . " Botol/Kemasan Berhasil Diimport dan Dipetakan!'); document.location = '?page=" . esc_js($obj->plugin_slug . $obj->menu_slug) . "';</script>";
-      } else {
-        echo "<script>alert('Gagal Upload!'); history.back();</script>";
-      }
-    }
-
-    if (isset($_POST['submit-log-bahan']) && check_admin_referer('sl_simlab_bahan_action') && SL_SIMLAB_Auth::can_book()) {
-      $obj1 = new SL_SIMLAB_LogbookBahanClass;
-      if ($obj1->addLogBahan($_POST) > 0) {
-        echo "<script>alert('Berhasil Dipakai!'); document.location = '?page=" . esc_js($obj1->plugin_slug . $obj1->menu_slug) . "';</script>";
-      } else {
-        // alert is handled natively inside addLogBahan for error logic.
-      }
-    }
-
-    if (isset($_POST['submit-bahan']) && check_admin_referer('sl_simlab_bahan_action')) {
-      if ($obj->tambahBahan($_POST)) {
-        echo "<script>alert('Katalog Bahan berhasil didaftarkan!'); document.location = '?page=" . esc_js($obj->plugin_slug . $obj->menu_slug) . "';</script>";
-      } else {
-        echo "<script>alert('Gagal menambah data!'); history.back();</script>";
-      }
-    }
-
-    if (isset($_POST['ubah-bahan']) && check_admin_referer('sl_simlab_bahan_action')) {
-      if ($obj->ubahBahan($_POST) > 0) {
-        echo "<script>alert('Perubahan Katalog Bahan berhasil disimpan!'); document.location = '?page=" . esc_js($obj->plugin_slug . $obj->menu_slug) . "';</script>";
-      } else {
-        echo "<script>alert('Gagal disimpan (atau tidak ada yg berubah)!'); document.location = '?page=" . esc_js($obj->plugin_slug . $obj->menu_slug) . "';</script>";
-      }
-    }
-
     $data = $obj->getBahan();
   ?>
     <div class="row">

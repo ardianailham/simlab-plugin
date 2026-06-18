@@ -1,5 +1,7 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) { exit; }
+if (! defined('ABSPATH')) {
+  exit;
+}
 
 class SL_SIMLAB_LogbookBahanClass extends SL_SimlabPlugin
 {
@@ -25,7 +27,7 @@ class SL_SIMLAB_LogbookBahanClass extends SL_SimlabPlugin
     $table1 = $this->db->prefix . $this->table;
     $table_kemasan = $this->db->prefix . 'sl_simlab_bahan_kemasan';
     $table2 = $this->db->prefix . 'sl_simlab_bahan';
-    
+
     $query = "SELECT l.id, l.qty, l.user_id, l.date, b.Nama_Bahan, b.Satuan_Dasar, k.label_kemasan, k.satuan
               FROM {$table1} l 
               INNER JOIN {$table_kemasan} k ON l.id_kemasan = k.id 
@@ -39,7 +41,7 @@ class SL_SIMLAB_LogbookBahanClass extends SL_SimlabPlugin
     $table1 = $this->db->prefix . $this->table;
     $table_kemasan = $this->db->prefix . 'sl_simlab_bahan_kemasan';
     $table2 = $this->db->prefix . 'sl_simlab_bahan';
-    
+
     $query = $this->db->prepare("SELECT l.qty, l.user_id, l.date, b.Nama_Bahan, b.Satuan_Dasar, k.label_kemasan, k.satuan
               FROM {$table1} l 
               INNER JOIN {$table_kemasan} k ON l.id_kemasan = k.id 
@@ -54,7 +56,7 @@ class SL_SIMLAB_LogbookBahanClass extends SL_SimlabPlugin
     $bahan = new SL_SIMLAB_BahanClass;
     $id_kemasan = $data['id_kemasan'];
     $kemasan = $bahan->getKemasanById($id_kemasan);
-    
+
     if (!$kemasan) {
       echo '<script type="text/javascript">alert("Kemasan tidak ditemukan!"); history.back();</script>';
       return 0;
@@ -75,14 +77,14 @@ class SL_SIMLAB_LogbookBahanClass extends SL_SimlabPlugin
         'date'       => sanitize_text_field($data['tanggal']),
       );
       if (!empty($data['tujuan'])) {
-         $values['tujuan'] = sanitize_text_field($data['tujuan']);
+        $values['tujuan'] = sanitize_text_field($data['tujuan']);
       }
-      
+
       $this->db->insert(
         $this->db->prefix . $this->table,
         $values
       );
-      
+
       $bahan->updateByKemasan($data['id_kemasan'], $data['Qty']);
       return $this->db->insert_id;
     }

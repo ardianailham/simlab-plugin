@@ -12,14 +12,14 @@
 
   /* ── GHS signal-word colour map ────────────────────────────────────── */
   var SIGNAL_COLORS = {
-    danger:  { bg: '#fff0f0', border: '#e53935', text: '#b71c1c' },
+    danger: { bg: '#fff0f0', border: '#e53935', text: '#b71c1c' },
     warning: { bg: '#fffde7', border: '#f9a825', text: '#5d4037' },
     default: { bg: '#e8f5e9', border: '#43a047', text: '#1b5e20' },
   };
 
   function signalStyle(word) {
     var w = (word || '').toLowerCase();
-    if (w === 'danger')  return SIGNAL_COLORS.danger;
+    if (w === 'danger') return SIGNAL_COLORS.danger;
     if (w === 'warning') return SIGNAL_COLORS.warning;
     return SIGNAL_COLORS.default;
   }
@@ -33,33 +33,33 @@
     /* --- Header row: structure image + key identifiers --- */
     var headerHtml =
       '<div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;margin-bottom:14px;">' +
-        '<div style="flex-shrink:0;">' +
-          '<img src="' + esc(data.structure_png) + '" alt="' + esc(data.iupac_name) + '"' +
-          ' style="width:140px;height:140px;object-fit:contain;border:1px solid #dee2e6;border-radius:8px;background:#fff;padding:4px;">' +
-        '</div>' +
-        '<div style="flex:1;min-width:180px;">' +
-          '<p style="margin:0 0 4px;font-size:13px;color:#6c757d;">IUPAC Name</p>' +
-          '<p style="margin:0 0 10px;font-size:15px;font-weight:600;color:#212529;">' + esc(data.iupac_name || '—') + '</p>' +
-          '<div style="display:flex;flex-wrap:wrap;gap:8px;">' +
-            metricBadge('Formula',    data.formula) +
-            metricBadge('Mol. Weight', data.molecular_weight ? data.molecular_weight + ' g/mol' : '—') +
-            metricBadge('CID',        data.cid) +
-          '</div>' +
-          '<div style="margin-top:10px;">' +
-            '<a href="' + esc(data.pubchem_url) + '" target="_blank" rel="noopener"' +
-            ' style="font-size:12px;color:#0d6efd;text-decoration:none;">' +
-            '<i class="fa fa-external-link" style="margin-right:4px;"></i>Lihat di PubChem</a>' +
-          '</div>' +
-        '</div>' +
+      '<div style="flex-shrink:0;">' +
+      '<img src="' + esc(data.structure_png) + '" alt="' + esc(data.iupac_name) + '"' +
+      ' style="width:140px;height:140px;object-fit:contain;border:1px solid #dee2e6;border-radius:8px;background:#fff;padding:4px;">' +
+      '</div>' +
+      '<div style="flex:1;min-width:180px;">' +
+      '<p style="margin:0 0 4px;font-size:13px;color:#6c757d;">IUPAC Name</p>' +
+      '<p style="margin:0 0 10px;font-size:15px;font-weight:600;color:#212529;">' + esc(data.iupac_name || '—') + '</p>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:8px;">' +
+      metricBadge('Formula', data.formula) +
+      metricBadge('Mol. Weight', data.molecular_weight ? data.molecular_weight + ' g/mol' : '—') +
+      metricBadge('CID', data.cid) +
+      '</div>' +
+      '<div style="margin-top:10px;">' +
+      '<a href="' + esc(data.pubchem_url) + '" target="_blank" rel="noopener"' +
+      ' style="font-size:12px;color:#0d6efd;text-decoration:none;">' +
+      '<i class="fa fa-external-link" style="margin-right:4px;"></i>Lihat di PubChem</a>' +
+      '</div>' +
+      '</div>' +
       '</div>';
 
     /* --- SMILES row --- */
     var smilesHtml =
       '<div style="background:#f8f9fa;border-radius:6px;padding:8px 12px;margin-bottom:12px;">' +
-        '<span style="font-size:11px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;">SMILES</span>' +
-        '<div style="font-family:\'Courier New\',monospace;font-size:12px;color:#212529;word-break:break-all;margin-top:2px;">' +
-          esc(data.smiles || '—') +
-        '</div>' +
+      '<span style="font-size:11px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;">SMILES</span>' +
+      '<div style="font-family:\'Courier New\',monospace;font-size:12px;color:#212529;word-break:break-all;margin-top:2px;">' +
+      esc(data.smiles || '—') +
+      '</div>' +
       '</div>';
 
     /* --- Hazard section --- */
@@ -77,7 +77,7 @@
       /* Signal word badge */
       var swBadge = signalWord
         ? '<span style="display:inline-block;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:700;' +
-          'background:' + col.border + ';color:#fff;margin-left:8px;">' + esc(signalWord) + '</span>'
+        'background:' + col.border + ';color:#fff;margin-left:8px;">' + esc(signalWord) + '</span>'
         : '';
 
       /* Hazard statements list */
@@ -91,20 +91,20 @@
       hazardHtml =
         '<div style="border:1px solid ' + col.border + ';border-left:4px solid ' + col.border + ';' +
         'border-radius:6px;background:' + col.bg + ';padding:12px 14px;">' +
-          '<div style="display:flex;align-items:center;margin-bottom:8px;">' +
-            '<span style="font-size:13px;font-weight:700;color:' + col.text + ';">' +
-              '<i class="fa fa-exclamation-triangle" style="margin-right:6px;"></i>Bahaya Utama (GHS)' +
-            '</span>' +
-            swBadge +
-          '</div>' +
-          (iconHtml ? '<div style="margin-bottom:8px;">' + iconHtml + '</div>' : '') +
-          (stmtHtml ? '<ul style="margin:0;padding-left:18px;">' + stmtHtml + '</ul>' : '') +
+        '<div style="display:flex;align-items:center;margin-bottom:8px;">' +
+        '<span style="font-size:13px;font-weight:700;color:' + col.text + ';">' +
+        '<i class="fa fa-exclamation-triangle" style="margin-right:6px;"></i>Bahaya Utama (GHS)' +
+        '</span>' +
+        swBadge +
+        '</div>' +
+        (iconHtml ? '<div style="margin-bottom:8px;">' + iconHtml + '</div>' : '') +
+        (stmtHtml ? '<ul style="margin:0;padding-left:18px;">' + stmtHtml + '</ul>' : '') +
         '</div>';
     } else {
       hazardHtml =
         '<div style="font-size:13px;color:#6c757d;padding:8px 0;">' +
-          '<i class="fa fa-info-circle" style="margin-right:5px;"></i>' +
-          'Data bahaya GHS tidak tersedia untuk senyawa ini.' +
+        '<i class="fa fa-info-circle" style="margin-right:5px;"></i>' +
+        'Data bahaya GHS tidak tersedia untuk senyawa ini.' +
         '</div>';
     }
 
@@ -115,7 +115,7 @@
     return '<div style="background:#fff;border:1px solid #dee2e6;border-radius:6px;padding:5px 10px;min-width:90px;">' +
       '<div style="font-size:10px;color:#6c757d;font-weight:600;">' + esc(label) + '</div>' +
       '<div style="font-size:13px;font-weight:600;color:#212529;">' + esc(String(value || '—')) + '</div>' +
-    '</div>';
+      '</div>';
   }
 
   /* ── Safety escape (plain text only, not for HTML attributes with quotes) */
@@ -132,7 +132,7 @@
   function doLookup($panel) {
     var $container = $($panel);
     var compoundName = $container.attr('data-pubchem-name') || $container.data('pubchem-name');
-    
+
     if (!compoundName) {
       $container.html(
         '<p style="color:#6c757d;font-size:13px;">' +
@@ -144,17 +144,19 @@
     /* Show skeleton / loading state */
     $container.html(
       '<div style="display:flex;align-items:center;gap:10px;padding:12px 0;color:#6c757d;font-size:14px;">' +
-        '<span class="fa fa-spinner fa-spin"></span>' +
-        '<span>Memuat data PubChem untuk <strong>' + esc(compoundName) + '</strong>…</span>' +
+      '<span class="fa fa-spinner fa-spin"></span>' +
+      '<span>Memuat data PubChem untuk <strong>' + esc(compoundName) + '</strong>…</span>' +
       '</div>'
     );
 
     $.ajax({
-      url:      sl_simlab_pubchem.ajax_url,
-      method:   'GET',
+      url: sl_simlab_pubchem.ajax_url,
+      method: 'POST',
+      dataType: 'json',
       data: {
         action: 'sl_pubchem_lookup',
-        name:   compoundName,
+        name: compoundName,
+        nonce: sl_simlab_pubchem.nonce,
       },
       success: function (resp) {
         if (resp.success) {
@@ -172,7 +174,7 @@
   /* ── Init ───────────────────────────────────────────────────────────── */
   function init() {
     // Auto-init panels with [data-pubchem-panel]
-    $('[data-pubchem-panel]').each(function() {
+    $('[data-pubchem-panel]').each(function () {
       doLookup(this);
     });
   }
@@ -182,7 +184,7 @@
       '<i class="fa fa-exclamation-circle" style="margin-right:6px;"></i>' +
       '<strong>' + esc(name) + '</strong> tidak ditemukan di PubChem.' +
       (msg ? ' <span style="color:#6c757d;">(' + esc(msg) + ')</span>' : '') +
-    '</div>';
+      '</div>';
   }
 
   // Expose to window for manual triggers
