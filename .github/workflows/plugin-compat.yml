@@ -103,7 +103,7 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           extensions: mysqli, mbstring, pdo_mysql
-          tools: phpunit
+          tools: composer
           coverage: none
 
       - name: Install system dependencies
@@ -134,7 +134,7 @@ jobs:
           WP_CORE_DIR: /tmp/wordpress
 
       - name: Run PHPUnit tests
-        run: phpunit --configuration phpunit.xml.dist
+        run: vendor/bin/phpunit --configuration phpunit.xml.dist
         env:
           MYSQL_HOST: 127.0.0.1
           MYSQL_PORT: 3306
