@@ -341,8 +341,12 @@ if (!is_user_logged_in()) {
               <div class="row mb-3">
                 <div class="col-md-6">
                   <label class="form-label">Nama Bahan</label>
-                  <input type="text" class="form-control" name="Nama_Bahan" value="<?= esc_attr($data['Nama_Bahan']); ?>"
-                    required>
+                  <div class="input-group">
+                    <input type="text" class="form-control" name="Nama_Bahan" id="edit-nama-bahan" value="<?= esc_attr($data['Nama_Bahan']); ?>"
+                      required>
+                    <button class="btn btn-outline-secondary" type="button" onclick="lookupEditPubChem()"><i
+                        class="fa fa-search"></i> Cek PubChem</button>
+                  </div>
                 </div>
                 <div class="col-md-6">
                   <label class="form-label">Alias / Rumus</label>
@@ -353,15 +357,23 @@ if (!is_user_logged_in()) {
               <div class="row mb-3">
                 <div class="col-md-4">
                   <label class="form-label">GHS Code (Pemisah Koma)</label>
-                  <input type="text" class="form-control" name="ghs_code" value="<?= esc_attr(!empty($data['ghs_code']) ? implode(', ', maybe_unserialize($data['ghs_code'])) : ''); ?>" placeholder="Contoh: GHS02, GHS07">
+                  <input type="text" class="form-control" name="ghs_code" id="edit-ghs-code" value="<?= esc_attr(!empty($data['ghs_code']) ? implode(', ', maybe_unserialize($data['ghs_code'])) : ''); ?>" placeholder="Contoh: GHS02, GHS07">
                 </div>
                 <div class="col-md-4">
                   <label class="form-label">Signal Word</label>
-                  <input type="text" class="form-control" name="signal_word" value="<?= esc_attr($data['signal_word'] ?? ''); ?>" placeholder="Contoh: Danger, Warning">
+                  <input type="text" class="form-control" name="signal_word" id="edit-signal-word" value="<?= esc_attr($data['signal_word'] ?? ''); ?>" placeholder="Contoh: Danger, Warning">
                 </div>
                 <div class="col-md-4">
                   <label class="form-label">Hazard Statement (Satu per baris)</label>
-                  <textarea class="form-control" name="hazard_statement" rows="2" placeholder="Satu pernyataan per baris..."><?= esc_textarea(!empty($data['hazard_statement']) ? implode("\n", maybe_unserialize($data['hazard_statement'])) : ''); ?></textarea>
+                  <textarea class="form-control" name="hazard_statement" id="edit-hazard-statement" rows="2" placeholder="Satu pernyataan per baris..."><?= esc_textarea(!empty($data['hazard_statement']) ? implode("\n", maybe_unserialize($data['hazard_statement'])) : ''); ?></textarea>
+                </div>
+              </div>
+
+              <div class="row mb-3" id="pubchem-edit-preview-container" style="display:none;">
+                <div class="col-12">
+                  <div class="p-3 border rounded bg-light">
+                    <div id="pubchem-edit-panel" data-pubchem-panel-manual></div>
+                  </div>
                 </div>
               </div>
 
@@ -663,27 +675,43 @@ if (!is_user_logged_in()) {
       </div>
     </div>
 
-    <script type="text/javascript">
-      function lookupPubChem() {
-        var name = document.getElementById('new-nama-bahan').value;
-        if (!name) {
-          alert('Masukkan nama bahan terlebih dahulu.');
-          return;
-        }
-        document.getElementById('pubchem-preview-container').style.display = 'block';
-        var panel = document.getElementById('pubchem-add-panel');
-        panel.setAttribute('data-pubchem-name', name);
-        if (window.triggerPubChemLookup) {
-          window.triggerPubChemLookup(panel);
-        } else {
-          panel.innerHTML = '<p class="text-muted small">PubChem script not ready.</p>';
-        }
-      }
-    </script>
-
   <?php
   } // end else (list)
   ?>
+
+  <script type="text/javascript">
+    function lookupPubChem() {
+      var name = document.getElementById('new-nama-bahan').value;
+      if (!name) {
+        alert('Masukkan nama bahan terlebih dahulu.');
+        return;
+      }
+      document.getElementById('pubchem-preview-container').style.display = 'block';
+      var panel = document.getElementById('pubchem-add-panel');
+      panel.setAttribute('data-pubchem-name', name);
+      if (window.triggerPubChemLookup) {
+        window.triggerPubChemLookup(panel);
+      } else {
+        panel.innerHTML = '<p class="text-muted small">PubChem script not ready.</p>';
+      }
+    }
+
+    function lookupEditPubChem() {
+      var name = document.getElementById('edit-nama-bahan').value;
+      if (!name) {
+        alert('Masukkan nama bahan terlebih dahulu.');
+        return;
+      }
+      document.getElementById('pubchem-edit-preview-container').style.display = 'block';
+      var panel = document.getElementById('pubchem-edit-panel');
+      panel.setAttribute('data-pubchem-name', name);
+      if (window.triggerPubChemLookup) {
+        window.triggerPubChemLookup(panel);
+      } else {
+        panel.innerHTML = '<p class="text-muted small">PubChem script not ready.</p>';
+      }
+    }
+  </script>
 
 <?php
   SL_SimlabPlugin::admin_footer();

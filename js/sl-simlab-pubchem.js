@@ -169,15 +169,29 @@
             if (ghsInput.length) {
               ghsInput.val(ghsCodes.join(', '));
             }
+            var editGhsInput = $('#edit-ghs-code');
+            if (editGhsInput.length) {
+              editGhsInput.val(ghsCodes.join(', '));
+            }
+
             var signalWord = resp.data.hazard.signal_word || '';
             var signalInput = $('#new-signal-word');
             if (signalInput.length) {
               signalInput.val(signalWord);
             }
+            var editSignalInput = $('#edit-signal-word');
+            if (editSignalInput.length) {
+              editSignalInput.val(signalWord);
+            }
+
             var statements = resp.data.hazard.all_statements || [];
             var statementsTextarea = $('#new-hazard-statement');
             if (statementsTextarea.length) {
               statementsTextarea.val(statements.join('\n'));
+            }
+            var editStatementsTextarea = $('#edit-hazard-statement');
+            if (editStatementsTextarea.length) {
+              editStatementsTextarea.val(statements.join('\n'));
             }
           }
         } else {
