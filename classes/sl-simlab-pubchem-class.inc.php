@@ -119,7 +119,7 @@ class SL_SIMLAB_PubChemClass
             'timeout' => 12,
             'headers' => [
                 'Accept'     => 'application/json',
-                'User-Agent' => 'SIMLAB-Plugin/1.0.2; ' . home_url(),
+                'User-Agent' => 'SIMLAB-Plugin/1.1.0; ' . home_url(),
             ],
         ]);
         if (is_wp_error($prop_resp)) {
@@ -173,7 +173,7 @@ class SL_SIMLAB_PubChemClass
             'hazard'           => $hazard,
         ];
 
-        set_transient($cache_key, $result, 30); // Short TTL for testing
+        set_transient($cache_key, $result, self::CACHE_TTL);
         return $result;
     }
 
@@ -205,7 +205,7 @@ class SL_SIMLAB_PubChemClass
             'timeout' => 15,
             'headers' => [
                 'Accept'     => 'application/json',
-                'User-Agent' => 'SIMLAB-Plugin/1.0.2; ' . home_url(),
+                'User-Agent' => 'SIMLAB-Plugin/1.1.0; ' . home_url(),
             ],
         ]);
         if (is_wp_error($view_resp) || 200 !== wp_remote_retrieve_response_code($view_resp)) {

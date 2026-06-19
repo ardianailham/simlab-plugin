@@ -5,7 +5,7 @@
  * Description: Plugin for "Sistem Informasi dan Manajemen Laboratorium"
  * Author: Ardiana Ilham Nurrohman
  * Author URI: https://github.com/ardianailham
- * Version: 1.0.1
+ * Version: 1.1.0
  */
 
 if (! defined('ABSPATH')) {
@@ -50,7 +50,7 @@ SL_SIMLAB_PubChemClass::register_ajax();
 add_action('plugins_loaded', 'sl_simlab_update_db_check');
 function sl_simlab_update_db_check()
 {
-  $current_version = '1.0.4';
+  $current_version = '1.1.0';
   if (get_option('sl_simlab_db_version') !== $current_version) {
     global $simlab_plugin;
     if (null !== $simlab_plugin) {

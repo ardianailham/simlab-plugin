@@ -250,7 +250,7 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
               <span class="dot bg-success me-2" style="width: 8px; height: 8px; border-radius: 50%;"></span>
               <small class="text-muted fw-bold">SIMLAB</small>
               <span class="mx-2 text-muted">|</span>
-              <small class="text-primary fw-bold">v1.0.1</small>
+              <small class="text-primary fw-bold">v1.1.0</small>
             </div>
           </div>
         </div>
