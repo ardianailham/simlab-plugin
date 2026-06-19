@@ -431,7 +431,10 @@ if (!is_user_logged_in()) {
                 <div class="row mb-3">
                   <div class="col-md-4">
                     <label for="Qty" class="form-label small fw-bold">Jumlah Yang Diambil</label>
-                    <input type="number" step="any" class="form-control" id="Qty" name="Qty" min="0" value="1" required>
+                    <div class="input-group">
+                      <input type="number" step="any" class="form-control" id="Qty" name="Qty" min="0" value="1" required>
+                      <span class="input-group-text" id="Qty-unit"><?= esc_html($k['satuan']); ?></span>
+                    </div>
                   </div>
                   <div class="col-md-4">
                     <label for="tanggal" class="form-label small fw-bold">Waktu</label>

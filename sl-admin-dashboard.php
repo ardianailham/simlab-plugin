@@ -20,6 +20,7 @@ SL_SimlabPlugin::admin_header('Dashboard SIMLAB', 'fa-th-large');
 <!-- Stats Row -->
 <div class="row g-4 mb-5">
   <div class="col-md-3">
+    <a href="<?= admin_url('admin.php?page=simlab-daftar-alat') ?>" style="text-decoration: none; color: inherit;">
     <div class="card h-100 border-0 shadow-sm bg-gradient-primary text-white" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);">
       <div class="card-body p-4 text-center">
         <i class="fa fa-wrench fa-3x mb-3 opacity-50"></i>
@@ -27,8 +28,10 @@ SL_SimlabPlugin::admin_header('Dashboard SIMLAB', 'fa-th-large');
         <p class="mb-0 small text-uppercase fw-bold opacity-75">Total Alat</p>
       </div>
     </div>
+    </a>
   </div>
   <div class="col-md-3">
+    <a href="<?= admin_url('admin.php?page=simlab-daftar-bahan') ?>" style="text-decoration: none; color: inherit;">
     <div class="card h-100 border-0 shadow-sm bg-gradient-success text-white" style="background: linear-gradient(135deg, #198754 0%, #157347 100%);">
       <div class="card-body p-4 text-center">
         <i class="fa fa-flask fa-3x mb-3 opacity-50"></i>
@@ -36,8 +39,10 @@ SL_SimlabPlugin::admin_header('Dashboard SIMLAB', 'fa-th-large');
         <p class="mb-0 small text-uppercase fw-bold opacity-75">Total Bahan</p>
       </div>
     </div>
+    </a>
   </div>
   <div class="col-md-3">
+    <a href="<?= admin_url('admin.php?page=simlab-logbook-alat') ?>" style="text-decoration: none; color: inherit;">
     <div class="card h-100 border-0 shadow-sm bg-gradient-warning text-dark" style="background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);">
       <div class="card-body p-4 text-center">
         <i class="fa fa-calendar-check-o fa-3x mb-3 opacity-50"></i>
@@ -45,8 +50,10 @@ SL_SimlabPlugin::admin_header('Dashboard SIMLAB', 'fa-th-large');
         <p class="mb-0 small text-uppercase fw-bold opacity-75">Peminjaman Aktif</p>
       </div>
     </div>
+    </a>
   </div>
   <div class="col-md-3">
+    <a href="<?= admin_url('admin.php?page=simlab-logbook-bahan') ?>" style="text-decoration: none; color: inherit;">
     <div class="card h-100 border-0 shadow-sm bg-gradient-info text-white" style="background: linear-gradient(135deg, #0dcaf0 0%, #0bacce 100%);">
       <div class="card-body p-4 text-center">
         <i class="fa fa-history fa-3x mb-3 opacity-50"></i>
@@ -54,6 +61,7 @@ SL_SimlabPlugin::admin_header('Dashboard SIMLAB', 'fa-th-large');
         <p class="mb-0 small text-uppercase fw-bold opacity-75">Riwayat Bahan</p>
       </div>
     </div>
+    </a>
   </div>
 </div>
 
@@ -137,4 +145,4 @@ function copyToClipboard(text, btn) {
 }
 </script>
 
-<?php SL_SimlabPlugin::admin_footer(); ?>
+<?php SL_SimlabPlugin::admin_footer(); ?>

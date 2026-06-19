@@ -34,14 +34,21 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
 
   function simlab_fixed_button()
   {
-    $option = get_option('sl_simlab_links');
-    if (!$option) {
-      $option['daftar-alat'] = '#';
-      $option['daftar-bahan'] = '#';
+    $option = get_option('sl_simlab_links', []);
+    $button_position = isset($option['button_position']) ? sanitize_text_field($option['button_position']) : 'bottom-right';
+
+    if ($button_position === 'hidden') {
+      return;
     }
+
+    $link_alat = !empty($option['daftar-alat']) ? esc_url($option['daftar-alat']) : '#';
+    $link_bahan = !empty($option['daftar-bahan']) ? esc_url($option['daftar-bahan']) : '#';
+    $position_class = 'simlab-pos-' . str_replace('_', '-', $button_position);
 ?>
-    <a href="<?= esc_url($option['daftar-alat']); ?>" id="buttonDaftarAlat" class="ms-3"></a>
-    <a href="<?= esc_url($option['daftar-bahan']); ?>" id="buttonDaftarBahan" class="ms-3"></a>
+    <div class="simlab-fixed-button-wrapper <?= esc_attr($position_class) ?>">
+      <a href="<?= $link_alat ?>" id="buttonDaftarAlat" class="simlab-fixed-button" aria-label="Daftar Alat"></a>
+      <a href="<?= $link_bahan ?>" id="buttonDaftarBahan" class="simlab-fixed-button" aria-label="Daftar Bahan"></a>
+    </div>
   <?php
   }
   public function _install()
@@ -171,6 +178,9 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
     ];
 
     $links = get_option('sl_simlab_links', []);
+    if (! isset($links['button_position'])) {
+      $links['button_position'] = 'bottom-right';
+    }
 
     foreach ($pages as $key => $info) {
       // Skip if we already have a valid URL saved for this key

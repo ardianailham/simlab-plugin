@@ -1,69 +1,84 @@
+.simlab-fixed-button-wrapper {
+  position: fixed;
+  z-index: 9999;
+  display: flex;
+  /* gap: 0.75rem; */
+  align-items: center;
+  pointer-events: none;
+}
+
+.simlab-fixed-button-wrapper a {
+  pointer-events: auto;
+}
+
+.simlab-pos-bottom-right {
+  bottom: 1.25rem;
+  right: 1.25rem;
+}
+
+.simlab-pos-bottom-left {
+  bottom: 1.25rem;
+  left: 1.25rem;
+}
+
+.simlab-pos-top-right {
+  top: 1.25rem;
+  right: 1.25rem;
+}
+
+.simlab-pos-top-left {
+  top: 1.25rem;
+  left: 1.25rem;
+}
+
+.simlab-fixed-button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 3rem;
+  height: 3rem;
+  min-width: 3rem;
+  min-height: 3rem;
+  padding: 0.5rem;
+  /* border-radius: 50%; */
+  /* border: 1px solid rgba(0, 0, 0, 0.08); */
+  /* background-color: rgba(255, 255, 255, 0.92); */
+  background-repeat: no-repeat;
+  background-position: center;
+  /* background-size: 55%; */
+  color: transparent;
+  text-decoration: none;
+  /* box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12); */
+  transition: transform 0.2s ease;
+}
+
+.simlab-fixed-button:hover,
+.simlab-fixed-button:focus-visible {
+  transform: translateY(-2px);
+  /* box-shadow: 0 18px 32px rgba(0, 0, 0, 0.18); */
+  outline: none;
+}
+
+/* .simlab-fixed-button:focus-visible {
+  box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.18);
+} */
+
 #buttonDaftarAlat {
   display: block;
-  /* Hidden by default */
-  position: fixed;
-  /* Fixed/sticky position */
-  bottom: 20px;
-  /* Place the button at the bottom of the page */
-  left: 30px;
-  /* Place the button 30px from the right */
-  z-index: 99;
-  /* Make sure it does not overlap */
-  border: none;
-  /* Remove borders */
-  outline: none;
-  /* Remove outline */
   background-image: url(../images/alat-bright.svg);
   background-size: contain;
-  /* background image */
   background-color: rgba(255, 255, 255, 0);
-  /* Set a background color */
   color: white;
-  /* Text color */
   cursor: pointer;
-  /* Add a mouse pointer on hover */
-  padding: 15px;
-  /* Some padding */
-  /* border-radius: 10px; */
-  /* Rounded corners */
-  font-size: 18px;
-  /* Increase font size */
-  width: 60px;
-  height: 60px;
 }
 
 #buttonDaftarBahan {
   display: block;
-  /* Hidden by default */
-  position: fixed;
-  /* Fixed/sticky position */
-  bottom: 20px;
-  /* Place the button at the bottom of the page */
-  left: 90px;
-  /* Place the button 30px from the right */
-  z-index: 99;
-  /* Make sure it does not overlap */
-  border: none;
-  /* Remove borders */
-  outline: none;
-  /* Remove outline */
   background-image: url(../images/bahan-bright.svg);
   background-size: contain;
-  /* Background Image */
   background-color: rgba(255, 255, 255, 0);
-  /* Set a background color */
   color: white;
-  /* Text color */
   cursor: pointer;
-  /* Add a mouse pointer on hover */
-  padding: 15px;
-  /* Some padding */
-  /* border-radius: 10px; */
-  /* Rounded corners */
-  font-size: 18px;
-  /* Increase font size */
-  width: 60px;
-  height: 60px;
 }
 
 #buttonDaftarBahan:hover {
@@ -72,4 +87,38 @@
 
 #buttonDaftarAlat:hover {
   background-image: url(../images/alat-dark.svg);
+}
+
+#buttonDaftarAlat,
+#buttonDaftarBahan {
+  /* position: static !important; */
+  width: 3rem !important;
+  height: 3rem !important;
+  min-width: 3rem !important;
+  min-height: 3rem !important;
+  /* padding: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  background-size: 55% !important; */
+}
+
+@media (max-width: 992px) {
+  .simlab-fixed-button-wrapper {
+    right: 0.75rem;
+    left: 0.75rem;
+  }
+
+}
+
+@media (max-width: 576px) {
+  .simlab-fixed-button-wrapper {
+    /* gap: 0.5rem; */
+    pointer-events: none;
+  }
+
+  .simlab-fixed-button {
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+    /* background-size: 48% !important; */
+  }
 }
