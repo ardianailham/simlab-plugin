@@ -113,28 +113,60 @@ if (!is_user_logged_in()) {
       echo "<div class='alert alert-danger'>Data alat tidak ditemukan!</div>";
       return;
     }
+
+    // Build Booking URL
+    $links = get_option('sl_simlab_links', []);
+    $booking_url = !empty($links['daftar-alat']) ? add_query_arg(array('addlog-alat' => '', 'id' => $data['id']), $links['daftar-alat']) : admin_url('admin.php?page=simlab-daftar-alat&addlog-alat&id=' . $data['id']);
     ?>
-    <div class="row d-flex justify-content-center">
-      <div class="col-lg-6">
-        <div class="card shadow-sm">
+    <div class="row">
+      <!-- Left Column: Detail & Gambar -->
+      <div class="col-lg-8 mb-4">
+        <div class="card h-100 shadow-sm border-0">
           <div class="card-body">
-            <h5 class="card-title fw-bold text-primary mb-3"><i class="fa fa-info-circle me-2"></i>Detail Alat</h5>
-            <table class="table table-sm">
-              <tr>
-                <th width="30%">Nama Alat</th>
-                <td>: <?= esc_html($data['Nama_Alat']); ?></td>
-              </tr>
-              <tr>
-                <th>Merk</th>
-                <td>: <?= esc_html($data['Merk']); ?></td>
-              </tr>
-              <tr>
-                <th>Stok / Qty</th>
-                <td>: <span class="badge bg-info"><?= esc_html($data['Qty']); ?> Unit</span></td>
-              </tr>
-            </table>
+            <h5 class="card-title fw-bold text-primary mb-4"><i class="fa fa-info-circle me-2"></i>Detail Alat</h5>
+            <div class="row">
+              <?php if (!empty($data['gambar'])): ?>
+                <div class="col-md-4 text-center mb-3">
+                  <img src="<?= esc_url($data['gambar']); ?>" alt="<?= esc_attr($data['Nama_Alat']); ?>" style="max-width: 100%; max-height: 200px; object-fit: contain; border-radius: 8px; border: 1px solid #dee2e6; padding: 4px; background: #fff;">
+                </div>
+              <?php endif; ?>
+              <div class="<?= !empty($data['gambar']) ? 'col-md-8' : 'col-md-12' ?>">
+                <table class="table table-striped table-bordered align-middle">
+                  <tr>
+                    <th width="30%">Nama Alat</th>
+                    <td class="fw-bold"><?= esc_html($data['Nama_Alat']); ?></td>
+                  </tr>
+                  <tr>
+                    <th>Merk</th>
+                    <td><?= esc_html($data['Merk']); ?></td>
+                  </tr>
+                  <tr>
+                    <th>Stok / Qty</th>
+                    <td><span class="badge bg-info text-dark"><?= esc_html($data['Qty']); ?> Unit</span></td>
+                  </tr>
+                </table>
+              </div>
+            </div>
             <div class="mt-4">
               <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>" class="btn btn-secondary"><i class="fa fa-arrow-left me-1"></i> Kembali</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: QR Code Booking -->
+      <div class="col-lg-4 mb-4">
+        <div class="card h-100 shadow-sm border-0 text-center">
+          <div class="card-body d-flex flex-column justify-content-between">
+            <div>
+              <h5 class="card-title fw-bold text-success mb-3"><i class="fa fa-qrcode me-2"></i>QR Code Booking</h5>
+              <p class="text-muted small mb-4">Pindai kode QR ini menggunakan HP Anda untuk langsung melakukan booking alat ini.</p>
+            </div>
+            <div class="d-flex justify-content-center mb-4">
+              <div id="booking-qrcode" data-booking-url="<?= esc_url($booking_url); ?>" data-item-name="<?= esc_attr($data['Nama_Alat']); ?>" style="padding: 10px; background: #fff; border: 1px solid #dee2e6; border-radius: 8px;"></div>
+            </div>
+            <div>
+              <button id="btn-download-qrcode" class="btn btn-sm btn-outline-success w-100"><i class="fa fa-download me-1"></i> Unduh QR Code</button>
             </div>
           </div>
         </div>
@@ -171,6 +203,16 @@ if (!is_user_logged_in()) {
                 <label for="Qty" class="form-label">Qty / Stok</label>
                 <input type="number" class="form-control" id="Qty" name="Qty" min="1" value="<?= esc_attr($data['Qty']); ?>" required>
               </div>
+              <div class="mb-3">
+                <label for="edit-gambar-url" class="form-label">Gambar Alat</label>
+                <div class="input-group">
+                  <input type="text" class="form-control" id="edit-gambar-url" name="gambar" value="<?= esc_attr($data['gambar'] ?? ''); ?>" placeholder="URL Gambar atau pilih dari media library">
+                  <button class="btn btn-outline-secondary" type="button" id="btn-edit-pilih-gambar"><i class="fa fa-image"></i> Pilih Gambar</button>
+                </div>
+                <div class="mt-2" id="edit-gambar-preview-container" style="<?= empty($data['gambar']) ? 'display:none;' : '' ?>">
+                  <img id="edit-gambar-preview" src="<?= esc_url($data['gambar'] ?? ''); ?>" style="max-height: 150px; border: 1px solid #dee2e6; border-radius: 8px; padding: 4px; background: #fff;" />
+                </div>
+              </div>
               <div class="d-flex gap-2 mt-4">
                 <button type="submit" class="btn btn-primary" name="ubah-alat" value="1"><i class="fa fa-save me-1"></i> Simpan Perubahan</button>
                 <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>" class="btn btn-secondary">Batal</a>
@@ -193,45 +235,54 @@ if (!is_user_logged_in()) {
     $time = $obj->getTime();
   ?>
     <div class="row d-flex justify-content-center">
-      <div class="col-lg-8">
-        <div class="card shadow-sm">
+      <div class="col-lg-10">
+        <div class="card shadow-sm border-0">
           <div class="card-body">
-            <h5 class="card-title fw-bold mb-4"><i class="fa fa-calendar-plus-o me-2 text-success"></i>Booking: <?= esc_html($data['Nama_Alat']); ?></h5>
-            <form method="post">
-              <?php wp_nonce_field('sl_simlab_alat_action', '_wpnonce'); ?>
-              <input type="hidden" name="action_type" value="submit-log-alat">
-              <input type="hidden" name="submit-log-alat" value="1">
-              <input type="hidden" name="id_alat" value="<?= intval($data['id']); ?>">
+            <h5 class="card-title fw-bold mb-4 text-success"><i class="fa fa-calendar-plus-o me-2 text-success"></i>Booking: <?= esc_html($data['Nama_Alat']); ?></h5>
+            <div class="row">
+              <?php if (!empty($data['gambar'])): ?>
+                <div class="col-md-4 text-center mb-4">
+                  <img src="<?= esc_url($data['gambar']); ?>" alt="<?= esc_attr($data['Nama_Alat']); ?>" style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 8px; border: 1px solid #dee2e6; padding: 4px; background: #fff;">
+                </div>
+              <?php endif; ?>
+              <div class="<?= !empty($data['gambar']) ? 'col-md-8' : 'col-md-12' ?>">
+                <form method="post">
+                  <?php wp_nonce_field('sl_simlab_alat_action', '_wpnonce'); ?>
+                  <input type="hidden" name="action_type" value="submit-log-alat">
+                  <input type="hidden" name="submit-log-alat" value="1">
+                  <input type="hidden" name="id_alat" value="<?= intval($data['id']); ?>">
 
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Nama Alat</label>
-                  <input type="text" class="form-control bg-light" value="<?= esc_attr($data['Nama_Alat']); ?>" readonly>
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Merk</label>
-                  <input type="text" class="form-control bg-light" value="<?= esc_attr($data['Merk']); ?>" readonly>
-                </div>
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Nama Alat</label>
+                      <input type="text" class="form-control bg-light" value="<?= esc_attr($data['Nama_Alat']); ?>" readonly>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Merk</label>
+                      <input type="text" class="form-control bg-light" value="<?= esc_attr($data['Merk']); ?>" readonly>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="Qty" class="form-label">Jumlah Pinjam (Maks: <?= esc_attr($data['Qty']); ?>)</label>
+                    <input type="number" class="form-control" id="Qty" name="Qty" min="1" max="<?= esc_attr($data['Qty']); ?>" value="1">
+                  </div>
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label for="start_date" class="form-label">Tanggal Mulai</label>
+                      <input type="datetime-local" class="form-control" id="start_date" name="start_date" value="<?= esc_attr($time[0]); ?>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for="end_date" class="form-label">Tanggal Selesai</label>
+                      <input type="datetime-local" class="form-control" id="end_date" name="end_date" value="<?= esc_attr($time[1]); ?>">
+                    </div>
+                  </div>
+                  <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="btn btn-success" name="submit-log-alat" value="1"><i class="fa fa-check me-1"></i> Konfirmasi Booking</button>
+                    <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>" class="btn btn-secondary">Batal</a>
+                  </div>
+                </form>
               </div>
-              <div class="mb-3">
-                <label for="Qty" class="form-label">Jumlah Pinjam (Maks: <?= esc_attr($data['Qty']); ?>)</label>
-                <input type="number" class="form-control" id="Qty" name="Qty" min="1" max="<?= esc_attr($data['Qty']); ?>" value="1">
-              </div>
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label for="start_date" class="form-label">Tanggal Mulai</label>
-                  <input type="datetime-local" class="form-control" id="start_date" name="start_date" value="<?= esc_attr($time[0]); ?>">
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label for="end_date" class="form-label">Tanggal Selesai</label>
-                  <input type="datetime-local" class="form-control" id="end_date" name="end_date" value="<?= esc_attr($time[1]); ?>">
-                </div>
-              </div>
-              <div class="d-flex gap-2 mt-4">
-                <button type="submit" class="btn btn-success" name="submit-log-alat" value="1"><i class="fa fa-check me-1"></i> Konfirmasi Booking</button>
-                <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>" class="btn btn-secondary">Batal</a>
-              </div>
-            </form>
+            </div>
           </div>
         </div>
       </div>
@@ -306,12 +357,19 @@ if (!is_user_logged_in()) {
                   <label class="form-label small fw-bold">Merk</label>
                   <input type="text" class="form-control" name="Merk" placeholder="Contoh: Olympus">
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-4">
                   <label class="form-label small fw-bold">Qty / Stok</label>
                   <input type="number" class="form-control" name="Qty" min="1" required value="1">
                 </div>
-                <div class="col-md-2 d-flex align-items-end">
-                  <button type="submit" class="btn btn-primary w-100" name="submit-alat" value="1">Simpan</button>
+                <div class="col-md-9">
+                  <label class="form-label small fw-bold">Gambar Alat</label>
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="add-gambar-url" name="gambar" placeholder="URL Gambar atau klik Pilih Gambar">
+                    <button class="btn btn-outline-secondary" type="button" id="btn-add-pilih-gambar"><i class="fa fa-image"></i> Pilih Gambar</button>
+                  </div>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                  <button type="submit" class="btn btn-primary w-100" name="submit-alat" value="1"><i class="fa fa-save me-1"></i> Simpan</button>
                 </div>
               </form>
             </div>
@@ -387,6 +445,8 @@ if (!is_user_logged_in()) {
         importAlat.style.display = (importAlat.style.display === 'block') ? 'none' : 'block';
         return false;
       }
+
+      // Media upload bindings are handled centrally in sl-simlab-core.js
     </script>
 
 <?php

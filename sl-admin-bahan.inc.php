@@ -128,9 +128,14 @@ if (!is_user_logged_in()) {
       echo "<script>alert('Data tidak ditemukan!'); document.location = '?page=" . esc_js($obj->plugin_slug . $obj->menu_slug) . "';</script>";
       return;
     }
+
+    // Build Booking URL
+    $links = get_option('sl_simlab_links', []);
+    $booking_url = !empty($links['daftar-bahan']) ? add_query_arg(array('addlog-bahan' => '', 'id' => $data['id']), $links['daftar-bahan']) : admin_url('admin.php?page=simlab-daftar-bahan&addlog-bahan&id=' . $data['id']);
     ?>
-    <div class="row d-flex justify-content-center">
-      <div class="col-lg-10">
+    <div class="row">
+      <!-- Left Column: Catalog details, Kemasan table, PubChem panel -->
+      <div class="col-lg-8 mb-4">
         <div class="card shadow-sm mb-4">
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -310,7 +315,37 @@ if (!is_user_logged_in()) {
           </div>
         </div>
       </div>
+
+      <!-- Right Column: Image and QR Code -->
+      <div class="col-lg-4 mb-4">
+        <!-- Image Card -->
+        <?php if (!empty($data['gambar'])): ?>
+          <div class="card shadow-sm mb-4 border-0 text-center">
+            <div class="card-body">
+              <h5 class="card-title fw-bold text-primary mb-3"><i class="fa fa-image me-2"></i>Gambar Bahan</h5>
+              <img src="<?= esc_url($data['gambar']); ?>" alt="<?= esc_attr($data['Nama_Bahan']); ?>" style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 8px; border: 1px solid #dee2e6; padding: 4px; background: #fff;">
+            </div>
+          </div>
+        <?php endif; ?>
+
+        <!-- QR Code Card -->
+        <div class="card shadow-sm border-0 text-center">
+          <div class="card-body d-flex flex-column justify-content-between" style="min-height: 320px;">
+            <div>
+              <h5 class="card-title fw-bold text-success mb-3"><i class="fa fa-qrcode me-2"></i>QR Code Penggunaan</h5>
+              <p class="text-muted small mb-4">Pindai kode QR ini menggunakan HP Anda untuk membuka halaman pencatatan pemakaian bahan ini.</p>
+            </div>
+            <div class="d-flex justify-content-center mb-4">
+              <div id="booking-qrcode" data-booking-url="<?= esc_url($booking_url); ?>" data-item-name="<?= esc_attr($data['Nama_Bahan']); ?>" style="padding: 10px; background: #fff; border: 1px solid #dee2e6; border-radius: 8px;"></div>
+            </div>
+            <div>
+              <button id="btn-download-qrcode" class="btn btn-sm btn-outline-success w-100"><i class="fa fa-download me-1"></i> Unduh QR Code</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
 
     <script type="text/javascript">
       function toggleRestockForm(id) {
@@ -394,6 +429,17 @@ if (!is_user_logged_in()) {
                 </div>
               </div>
 
+              <div class="mb-3">
+                <label for="edit-gambar-url" class="form-label">Gambar Bahan</label>
+                <div class="input-group">
+                  <input type="text" class="form-control" id="edit-gambar-url" name="gambar" value="<?= esc_attr($data['gambar'] ?? ''); ?>" placeholder="URL Gambar atau pilih dari media library">
+                  <button class="btn btn-outline-secondary" type="button" id="btn-edit-pilih-gambar"><i class="fa fa-image"></i> Pilih Gambar</button>
+                </div>
+                <div class="mt-2" id="edit-gambar-preview-container" style="<?= empty($data['gambar']) ? 'display:none;' : '' ?>">
+                  <img id="edit-gambar-preview" src="<?= esc_url($data['gambar'] ?? ''); ?>" style="max-height: 150px; border: 1px solid #dee2e6; border-radius: 8px; padding: 4px; background: #fff;" />
+                </div>
+              </div>
+
               <div class="alert alert-info py-2 small">Untuk merubah data stok spesifik dan expired date, silakan kembali
                 lalu masuk melalui tombol "Detail -> Kemasan".</div>
 
@@ -423,8 +469,8 @@ if (!is_user_logged_in()) {
     $time = $obj->getTime();
   ?>
     <div class="row d-flex justify-content-center">
-      <div class="col-lg-8">
-        <div class="card shadow-sm">
+      <div class="col-lg-10">
+        <div class="card shadow-sm border-0">
           <div class="card-body">
             <h5 class="card-title fw-bold mb-4 text-success"><i class="fa fa-plus-circle me-2"></i>Pakai Bahan:
               <?= esc_html($data['Nama_Bahan']); ?>
@@ -436,58 +482,65 @@ if (!is_user_logged_in()) {
               <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>" class="btn btn-secondary"><i
                   class="fa fa-arrow-left"></i> Kembali</a>
             <?php else: ?>
-              <form method="post">
-                <?php wp_nonce_field('sl_simlab_bahan_action', '_wpnonce'); ?>
-
-
-
-                <div class="row mb-3">
-                  <div class="col-md-12">
-                    <label class="form-label small fw-bold">Pilih Kemasan Botol yang Akan Diambil</label>
-                    <select name="id_kemasan" class="form-select border-primary" required>
-                      <option value="">-- Pilih Spesifik Botol --</option>
-                      <?php foreach ($ready_kemasans as $k): ?>
-                        <option value="<?= esc_attr($k['id']) ?>">Botol: <?= esc_html($k['label_kemasan']) ?> (Tersedia:
-                          <?= esc_html($k['jumlah_tersedia'] . ' ' . $k['satuan']) ?> - Di <?= esc_html($k['letak']) ?>)
-                        </option>
-                      <?php endforeach; ?>
-                    </select>
+              <div class="row">
+                <?php if (!empty($data['gambar'])): ?>
+                  <div class="col-md-4 text-center mb-4">
+                    <img src="<?= esc_url($data['gambar']); ?>" alt="<?= esc_attr($data['Nama_Bahan']); ?>" style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 8px; border: 1px solid #dee2e6; padding: 4px; background: #fff;">
                   </div>
-                </div>
+                <?php endif; ?>
+                <div class="<?= !empty($data['gambar']) ? 'col-md-8' : 'col-md-12' ?>">
+                  <form method="post">
+                    <?php wp_nonce_field('sl_simlab_bahan_action', '_wpnonce'); ?>
 
-                <div class="row mb-3">
-                  <div class="col-md-4">
-                    <label for="Qty" class="form-label small fw-bold">Jumlah Yang Diambil</label>
-                    <div class="input-group">
-                      <input type="number" step="any" class="form-control" id="Qty" name="Qty" min="0" value="1" required>
-                      <span class="input-group-text" id="Qty-unit"><?= esc_html($k['satuan']); ?></span>
+                    <div class="row mb-3">
+                      <div class="col-md-12">
+                        <label class="form-label small fw-bold">Pilih Kemasan Botol yang Akan Diambil</label>
+                        <select name="id_kemasan" class="form-select border-primary" required>
+                          <option value="">-- Pilih Spesifik Botol --</option>
+                          <?php foreach ($ready_kemasans as $k): ?>
+                            <option value="<?= esc_attr($k['id']) ?>">Botol: <?= esc_html($k['label_kemasan']) ?> (Tersedia:
+                              <?= esc_html($k['jumlah_tersedia'] . ' ' . $k['satuan']) ?> - Di <?= esc_html($k['letak']) ?>)
+                            </option>
+                          <?php endforeach; ?>
+                        </select>
+                      </div>
                     </div>
-                  </div>
-                  <div class="col-md-4">
-                    <label for="tanggal" class="form-label small fw-bold">Waktu</label>
-                    <input type="datetime-local" class="form-control" id="tanggal" name="tanggal"
-                      value="<?= esc_attr($time[0]); ?>" required>
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label small fw-bold">Keperluan / Tujuan</label>
-                    <input type="text" name="tujuan" class="form-control" placeholder="Riset/Praktikum...">
-                  </div>
-                </div>
 
-                <!-- PubChem Panel -->
-                <div class="mb-4">
-                  <h6 class="fw-bold mb-2" style="color:#6c757d;font-size:13px;">
-                    <i class="fa fa-shield me-2" style="color:#dc3545;"></i>Informasi Keselamatan Bahan (PubChem)
-                  </h6>
-                  <div data-pubchem-panel data-pubchem-id="<?= intval($data['id']); ?>" data-pubchem-name="<?= esc_attr($data['Nama_Bahan']); ?>"></div>
-                </div>
+                    <div class="row mb-3">
+                      <div class="col-md-4">
+                        <label for="Qty" class="form-label small fw-bold">Jumlah Yang Diambil</label>
+                        <div class="input-group">
+                          <input type="number" step="any" class="form-control" id="Qty" name="Qty" min="0" value="1" required>
+                          <span class="input-group-text" id="Qty-unit"><?= esc_html($k['satuan']); ?></span>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <label for="tanggal" class="form-label small fw-bold">Waktu</label>
+                        <input type="datetime-local" class="form-control" id="tanggal" name="tanggal"
+                          value="<?= esc_attr($time[0]); ?>" required>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label small fw-bold">Keperluan / Tujuan</label>
+                        <input type="text" name="tujuan" class="form-control" placeholder="Riset/Praktikum...">
+                      </div>
+                    </div>
 
-                <div class="d-flex gap-2 mt-4">
-                  <button type="submit" class="btn btn-success" name="submit-log-bahan" value="1"><i
-                      class="fa fa-check me-1"></i> Simpan Penggunaan</button>
-                  <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>" class="btn btn-secondary">Batal</a>
+                    <!-- PubChem Panel -->
+                    <div class="mb-4">
+                      <h6 class="fw-bold mb-2" style="color:#6c757d;font-size:13px;">
+                        <i class="fa fa-shield me-2" style="color:#dc3545;"></i>Informasi Keselamatan Bahan (PubChem)
+                      </h6>
+                      <div data-pubchem-panel data-pubchem-id="<?= intval($data['id']); ?>" data-pubchem-name="<?= esc_attr($data['Nama_Bahan']); ?>"></div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                      <button type="submit" class="btn btn-success" name="submit-log-bahan" value="1"><i
+                          class="fa fa-check me-1"></i> Simpan Penggunaan</button>
+                      <a href="?page=<?= esc_attr($obj->plugin_slug . $obj->menu_slug); ?>" class="btn btn-secondary">Batal</a>
+                    </div>
+                  </form>
                 </div>
-              </form>
+              </div>
             <?php endif; ?>
           </div>
         </div>
@@ -590,6 +643,13 @@ if (!is_user_logged_in()) {
                 <div class="col-md-4">
                   <label class="form-label small fw-bold">Satuan Dasar Penghitungan</label>
                   <input type="text" class="form-control" name="Satuan_Dasar" required placeholder="Gram, ml, pcs">
+                </div>
+                <div class="col-md-8">
+                  <label class="form-label small fw-bold">Gambar Bahan</label>
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="add-gambar-url" name="gambar" placeholder="URL Gambar atau klik Pilih Gambar">
+                    <button class="btn btn-outline-secondary" type="button" id="btn-add-pilih-gambar"><i class="fa fa-image"></i> Pilih Gambar</button>
+                  </div>
                 </div>
 
                 <div class="col-12 mt-3" id="pubchem-preview-container" style="display:none;">
@@ -711,6 +771,8 @@ if (!is_user_logged_in()) {
         panel.innerHTML = '<p class="text-muted small">PubChem script not ready.</p>';
       }
     }
+
+    // Media upload bindings are handled centrally in sl-simlab-core.js
   </script>
 
 <?php

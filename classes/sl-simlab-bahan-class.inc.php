@@ -73,7 +73,8 @@ class SL_SIMLAB_BahanClass extends SL_SimlabPlugin
       'Satuan_Dasar'     => sanitize_text_field($data['Satuan_Dasar'] ?? ''),
       'ghs_code'         => maybe_serialize($ghs_array),
       'hazard_statement' => maybe_serialize($hazard_array),
-      'signal_word'      => $signal_word
+      'signal_word'      => $signal_word,
+      'gambar'           => isset($data['gambar']) ? esc_url_raw($data['gambar']) : ''
     );
     $results = $this->db->insert($table, $values);
     return $results;
@@ -100,7 +101,8 @@ class SL_SIMLAB_BahanClass extends SL_SimlabPlugin
       'Satuan_Dasar'     => sanitize_text_field($data['Satuan_Dasar'] ?? ''),
       'ghs_code'         => maybe_serialize($ghs_array),
       'hazard_statement' => maybe_serialize($hazard_array),
-      'signal_word'      => $signal_word
+      'signal_word'      => $signal_word,
+      'gambar'           => isset($data['gambar']) ? esc_url_raw($data['gambar']) : ''
     );
     $where = array('id' => intval($data['id']));
 

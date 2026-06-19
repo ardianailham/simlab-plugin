@@ -47,7 +47,8 @@ class SL_SIMLAB_AlatClass extends SL_SimlabPlugin
         'id' => '',
         'Nama_Alat' => sanitize_text_field($data['Nama_Alat']),
         'Merk' => sanitize_text_field($data['Merk']),
-        'Qty' => intval($data['Qty'])
+        'Qty' => intval($data['Qty']),
+        'gambar' => isset($data['gambar']) ? esc_url_raw($data['gambar']) : ''
       );
       // $results = $this->db->query($this->db->prepare($query));
       $results = $this->db->insert($table, $values);
@@ -65,7 +66,8 @@ class SL_SIMLAB_AlatClass extends SL_SimlabPlugin
     $value = array(
       "Nama_Alat" => sanitize_text_field($data['Nama_Alat']),
       "Merk" => sanitize_text_field($data['Merk']),
-      "Qty" => intval($data['Qty'])
+      "Qty" => intval($data['Qty']),
+      'gambar' => isset($data['gambar']) ? esc_url_raw($data['gambar']) : ''
     );
     $where = array('id' => intval($data['id']));
 

@@ -65,6 +65,7 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
   `Nama_Alat` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `Merk` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `Qty` int(11) NOT NULL,
+  `gambar` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
@@ -80,6 +81,7 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
   `ghs_code` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `hazard_statement` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `signal_word` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `gambar` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)

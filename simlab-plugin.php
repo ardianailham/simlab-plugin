@@ -50,7 +50,7 @@ SL_SIMLAB_PubChemClass::register_ajax();
 add_action('plugins_loaded', 'sl_simlab_update_db_check');
 function sl_simlab_update_db_check()
 {
-  $current_version = '1.0.3';
+  $current_version = '1.0.4';
   if (get_option('sl_simlab_db_version') !== $current_version) {
     global $simlab_plugin;
     if (null !== $simlab_plugin) {
@@ -98,12 +98,23 @@ function setting_page()
 // Script
 function sl_simlab_scripts()
 {
+  // Enqueue WordPress Media Uploader for image selection
+  wp_enqueue_media();
+
   wp_register_script('sl_simlab_bootstrap_js', SL_SIMLAB_PATH . '/js/bootstrap.js', array('jquery'), '1.0', true);
   wp_enqueue_script('sl_simlab_bootstrap_js');
   wp_localize_script('sl_simlab_bootstrap_js', 'sl_simlab_vars', array(
     'timezone' => 'Asia/Jakarta',
     'utc_offset_seconds' => 7 * 3600,
   ));
+
+  // QR Code generator script
+  wp_register_script('sl_simlab_qrcode', SL_SIMLAB_PATH . '/js/qrcode.min.js', array(), '1.0.0', true);
+  wp_enqueue_script('sl_simlab_qrcode');
+
+  // SIMLAB Core Script (handles QR and Media selection)
+  wp_register_script('sl_simlab_core_js', SL_SIMLAB_PATH . '/js/sl-simlab-core.js', array('jquery', 'sl_simlab_qrcode'), '1.0.0', true);
+  wp_enqueue_script('sl_simlab_core_js');
 
   // PubChem integration script
   wp_register_script(
