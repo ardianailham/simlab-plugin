@@ -49,11 +49,16 @@ class SL_SIMLAB_PubChemClass
             $name = sanitize_text_field(wp_unslash($_REQUEST['name']));
         }
 
+        $id = 0;
+        if (isset($_REQUEST['id'])) {
+            $id = intval($_REQUEST['id']);
+        }
+
         if (empty($name)) {
             wp_send_json_error(['message' => 'No compound name provided.'], 400);
         }
 
-        $result = self::lookup($name);
+        $result = self::lookup($name, $id);
 
         if (is_wp_error($result)) {
             wp_send_json_error(['message' => $result->get_error_message()], 404);
@@ -69,9 +74,38 @@ class SL_SIMLAB_PubChemClass
      * @param  string $name  Compound name (e.g. "ethanol", "sulfuric acid")
      * @return array|WP_Error
      */
-    public static function lookup($name)
+    public static function lookup($name, $id = 0)
     {
-        $cache_key = 'sl_pubchem_v3_' . md5(strtolower(trim($name)));
+        global $wpdb;
+        $bahan = null;
+        if ($id > 0) {
+            $bahan = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}sl_simlab_bahan WHERE id = %d", $id), ARRAY_A);
+        } else {
+            $bahan = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}sl_simlab_bahan WHERE Nama_Bahan = %s", $name), ARRAY_A);
+        }
+
+        $ghs_array = [];
+        $hazard_statements = [];
+        $signal_word = '';
+        if ($bahan && !empty($bahan['ghs_code'])) {
+            $ghs_array = maybe_unserialize($bahan['ghs_code']);
+            if (!is_array($ghs_array)) {
+                $ghs_array = [];
+            }
+            if (!empty($bahan['hazard_statement'])) {
+                $hazard_statements = maybe_unserialize($bahan['hazard_statement']);
+                if (!is_array($hazard_statements)) {
+                    $hazard_statements = [];
+                }
+            }
+            if (!empty($bahan['signal_word'])) {
+                $signal_word = $bahan['signal_word'];
+            }
+        }
+
+        $has_db_ghs = !empty($ghs_array);
+
+        $cache_key = 'sl_pubchem_v4_' . md5(strtolower(trim($name)) . ($has_db_ghs ? '_db' : '_full'));
         $cached    = get_transient($cache_key);
         if (false !== $cached) {
             return $cached;
@@ -104,7 +138,19 @@ class SL_SIMLAB_PubChemClass
         $cid   = (int) $props['CID'];
 
         // ── 2. Hazard / GHS data ───────────────────────────────────────────
-        $hazard = self::_fetch_hazard($cid);
+        if ($has_db_ghs) {
+            $hazard = [
+                'code'           => !empty($ghs_array) ? $ghs_array[0] : '',
+                'statement'      => !empty($hazard_statements) ? $hazard_statements[0] : '',
+                'all_statements' => $hazard_statements,
+                'pictogram_url'  => !empty($ghs_array) ? self::_ghs_icon_url($ghs_array[0]) : '',
+                'all_pictograms' => array_map([__CLASS__, '_ghs_icon_url'], $ghs_array),
+                'all_codes'      => $ghs_array,
+                'signal_word'    => $signal_word,
+            ];
+        } else {
+            $hazard = self::_fetch_hazard($cid);
+        }
 
         // Extract properties carefully — keys can be inconsistent in casing or presence
         $f_smiles = '';
@@ -194,6 +240,7 @@ class SL_SIMLAB_PubChemClass
             'all_statements' => $ghs_statements,
             'pictogram_url' => $primary_pictogram,
             'all_pictograms' => array_map([__CLASS__, '_ghs_icon_url'], $pictograms),
+            'all_codes'     => $pictograms,
             'signal_word'   => $signal_word,
         ];
     }

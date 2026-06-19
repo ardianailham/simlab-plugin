@@ -50,7 +50,7 @@ SL_SIMLAB_PubChemClass::register_ajax();
 add_action('plugins_loaded', 'sl_simlab_update_db_check');
 function sl_simlab_update_db_check()
 {
-  $current_version = '1.0.2';
+  $current_version = '1.0.3';
   if (get_option('sl_simlab_db_version') !== $current_version) {
     global $simlab_plugin;
     if (null !== $simlab_plugin) {

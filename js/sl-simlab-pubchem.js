@@ -132,6 +132,7 @@
   function doLookup($panel) {
     var $container = $($panel);
     var compoundName = $container.attr('data-pubchem-name') || $container.data('pubchem-name');
+    var compoundId = $container.attr('data-pubchem-id') || $container.data('pubchem-id') || '';
 
     if (!compoundName) {
       $container.html(
@@ -156,11 +157,29 @@
       data: {
         action: 'sl_pubchem_lookup',
         name: compoundName,
+        id: compoundId,
         nonce: sl_simlab_pubchem.nonce,
       },
       success: function (resp) {
         if (resp.success) {
           $container.html(buildPanel(resp.data));
+          if (resp.data.hazard) {
+            var ghsCodes = resp.data.hazard.all_codes || [];
+            var ghsInput = $('#new-ghs-code');
+            if (ghsInput.length) {
+              ghsInput.val(ghsCodes.join(', '));
+            }
+            var signalWord = resp.data.hazard.signal_word || '';
+            var signalInput = $('#new-signal-word');
+            if (signalInput.length) {
+              signalInput.val(signalWord);
+            }
+            var statements = resp.data.hazard.all_statements || [];
+            var statementsTextarea = $('#new-hazard-statement');
+            if (statementsTextarea.length) {
+              statementsTextarea.val(statements.join('\n'));
+            }
+          }
         } else {
           $container.html(notFound(compoundName, resp.data && resp.data.message));
         }

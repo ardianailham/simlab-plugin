@@ -183,7 +183,7 @@ if (!is_user_logged_in()) {
             <h6 class="fw-bold mb-3" style="color:#6c757d;">
               <i class="fa fa-flask me-2" style="color:#0d6efd;"></i>Informasi Kimia (PubChem)
             </h6>
-            <div data-pubchem-panel data-pubchem-name="<?= esc_attr($data['Nama_Bahan']); ?>"></div>
+            <div data-pubchem-panel data-pubchem-id="<?= intval($data['id']); ?>" data-pubchem-name="<?= esc_attr($data['Nama_Bahan']); ?>"></div>
           </div>
         </div>
 
@@ -352,6 +352,21 @@ if (!is_user_logged_in()) {
 
               <div class="row mb-3">
                 <div class="col-md-4">
+                  <label class="form-label">GHS Code (Pemisah Koma)</label>
+                  <input type="text" class="form-control" name="ghs_code" value="<?= esc_attr(!empty($data['ghs_code']) ? implode(', ', maybe_unserialize($data['ghs_code'])) : ''); ?>" placeholder="Contoh: GHS02, GHS07">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Signal Word</label>
+                  <input type="text" class="form-control" name="signal_word" value="<?= esc_attr($data['signal_word'] ?? ''); ?>" placeholder="Contoh: Danger, Warning">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Hazard Statement (Satu per baris)</label>
+                  <textarea class="form-control" name="hazard_statement" rows="2" placeholder="Satu pernyataan per baris..."><?= esc_textarea(!empty($data['hazard_statement']) ? implode("\n", maybe_unserialize($data['hazard_statement'])) : ''); ?></textarea>
+                </div>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col-md-4">
                   <label class="form-label">Merk</label>
                   <input type="text" class="form-control" name="Merk" value="<?= esc_attr($data['Merk']); ?>">
                 </div>
@@ -452,7 +467,7 @@ if (!is_user_logged_in()) {
                   <h6 class="fw-bold mb-2" style="color:#6c757d;font-size:13px;">
                     <i class="fa fa-shield me-2" style="color:#dc3545;"></i>Informasi Keselamatan Bahan (PubChem)
                   </h6>
-                  <div data-pubchem-panel data-pubchem-name="<?= esc_attr($data['Nama_Bahan']); ?>"></div>
+                  <div data-pubchem-panel data-pubchem-id="<?= intval($data['id']); ?>" data-pubchem-name="<?= esc_attr($data['Nama_Bahan']); ?>"></div>
                 </div>
 
                 <div class="d-flex gap-2 mt-4">
@@ -541,6 +556,19 @@ if (!is_user_logged_in()) {
                 <div class="col-md-3">
                   <label class="form-label small fw-bold">Kategori</label>
                   <input type="text" class="form-control" name="Kategori" placeholder="Reagen / BHP">
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label small fw-bold">GHS Code (Pemisah Koma)</label>
+                  <input type="text" class="form-control" name="ghs_code" id="new-ghs-code" placeholder="Contoh: GHS02, GHS07">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small fw-bold">Signal Word</label>
+                  <input type="text" class="form-control" name="signal_word" id="new-signal-word" placeholder="Contoh: Danger, Warning">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small fw-bold">Hazard Statement (Satu per baris)</label>
+                  <textarea class="form-control" name="hazard_statement" id="new-hazard-statement" rows="2" placeholder="Satu pernyataan per baris..."></textarea>
                 </div>
 
                 <div class="col-md-4">

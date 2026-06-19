@@ -28,7 +28,7 @@ class SL_SIMLAB_BahanClass extends SL_SimlabPlugin
     $t_bahan = $this->db->prefix . $this->table;
     $t_kemasan = $this->db->prefix . 'sl_simlab_bahan_kemasan';
 
-    $query = "SELECT b.id, b.Nama_Bahan, b.Alias, b.Kategori, b.Merk, b.Satuan_Dasar, b.created_at, 
+    $query = "SELECT b.id, b.Nama_Bahan, b.Alias, b.Kategori, b.Merk, b.Satuan_Dasar, b.ghs_code, b.hazard_statement, b.signal_word, b.created_at, 
               IFNULL(SUM(k.jumlah_tersedia), 0) as StokTotal,
               IFNULL(SUM(k.kapasitas_awal), 0) as KapasitasMax 
               FROM {$t_bahan} b 
@@ -56,12 +56,24 @@ class SL_SIMLAB_BahanClass extends SL_SimlabPlugin
   public function tambahBahan($data)
   {
     $table = $this->db->prefix . $this->table;
+
+    $ghs_input = isset($data['ghs_code']) ? sanitize_text_field($data['ghs_code']) : '';
+    $ghs_array = array_filter(array_map('trim', explode(',', $ghs_input)));
+
+    $hazard_input = isset($data['hazard_statement']) ? sanitize_textarea_field($data['hazard_statement']) : '';
+    $hazard_array = array_filter(array_map('trim', explode("\n", str_replace("\r", "", $hazard_input))));
+
+    $signal_word = isset($data['signal_word']) ? sanitize_text_field($data['signal_word']) : '';
+
     $values = array(
-      'Nama_Bahan'   => sanitize_text_field($data['Nama_Bahan'] ?? ''),
-      'Alias'        => sanitize_text_field($data['Alias'] ?? ''),
-      'Kategori'     => sanitize_text_field($data['Kategori'] ?? ''),
-      'Merk'         => sanitize_text_field($data['Merk'] ?? ''),
-      'Satuan_Dasar' => sanitize_text_field($data['Satuan_Dasar'] ?? '')
+      'Nama_Bahan'       => sanitize_text_field($data['Nama_Bahan'] ?? ''),
+      'Alias'            => sanitize_text_field($data['Alias'] ?? ''),
+      'Kategori'         => sanitize_text_field($data['Kategori'] ?? ''),
+      'Merk'             => sanitize_text_field($data['Merk'] ?? ''),
+      'Satuan_Dasar'     => sanitize_text_field($data['Satuan_Dasar'] ?? ''),
+      'ghs_code'         => maybe_serialize($ghs_array),
+      'hazard_statement' => maybe_serialize($hazard_array),
+      'signal_word'      => $signal_word
     );
     $results = $this->db->insert($table, $values);
     return $results;
@@ -71,12 +83,24 @@ class SL_SIMLAB_BahanClass extends SL_SimlabPlugin
   public function ubahBahan($data)
   {
     $table = $this->db->prefix . $this->table;
+
+    $ghs_input = isset($data['ghs_code']) ? sanitize_text_field($data['ghs_code']) : '';
+    $ghs_array = array_filter(array_map('trim', explode(',', $ghs_input)));
+
+    $hazard_input = isset($data['hazard_statement']) ? sanitize_textarea_field($data['hazard_statement']) : '';
+    $hazard_array = array_filter(array_map('trim', explode("\n", str_replace("\r", "", $hazard_input))));
+
+    $signal_word = isset($data['signal_word']) ? sanitize_text_field($data['signal_word']) : '';
+
     $value = array(
-      'Nama_Bahan'   => sanitize_text_field($data['Nama_Bahan'] ?? ''),
-      'Alias'        => sanitize_text_field($data['Alias'] ?? ''),
-      'Kategori'     => sanitize_text_field($data['Kategori'] ?? ''),
-      'Merk'         => sanitize_text_field($data['Merk'] ?? ''),
-      'Satuan_Dasar' => sanitize_text_field($data['Satuan_Dasar'] ?? '')
+      'Nama_Bahan'       => sanitize_text_field($data['Nama_Bahan'] ?? ''),
+      'Alias'            => sanitize_text_field($data['Alias'] ?? ''),
+      'Kategori'         => sanitize_text_field($data['Kategori'] ?? ''),
+      'Merk'             => sanitize_text_field($data['Merk'] ?? ''),
+      'Satuan_Dasar'     => sanitize_text_field($data['Satuan_Dasar'] ?? ''),
+      'ghs_code'         => maybe_serialize($ghs_array),
+      'hazard_statement' => maybe_serialize($hazard_array),
+      'signal_word'      => $signal_word
     );
     $where = array('id' => intval($data['id']));
 

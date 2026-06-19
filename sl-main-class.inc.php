@@ -77,6 +77,9 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
   `Kategori` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `Merk` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `Satuan_Dasar` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ghs_code` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `hazard_statement` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `signal_word` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
