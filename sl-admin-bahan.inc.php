@@ -116,6 +116,20 @@ if (!is_user_logged_in()) {
     }
   }
 
+  if (isset($_POST['edit-kemasan']) && check_admin_referer('sl_edit_kemasan_action')) {
+    if (!SL_SIMLAB_Auth::is_admin()) {
+      wp_die('No permission');
+    }
+    $id_kemasan = intval($_POST['id_kemasan']);
+    $id_bahan = intval($_POST['id_bahan']);
+    if ($obj->ubahKemasan($_POST) !== false) {
+      echo "<script>alert('Kemasan berhasil diupdate!'); document.location = '?page=" . esc_js($obj->plugin_slug . $obj->menu_slug) . "&detail-bahan&id=" . $id_bahan . "';</script>";
+    } else {
+      echo "<script>alert('Gagal update kemasan!'); history.back();</script>";
+    }
+  }
+
+
   SL_SimlabPlugin::admin_header('Manajemen Bahan', 'fa-flask');
 
 
@@ -283,6 +297,8 @@ if (!is_user_logged_in()) {
                         <td>
                           <button class="btn btn-warning btn-sm" title="Restock"
                             onclick="toggleRestockForm(<?= intval($kem['id']) ?>)"><i class="fa fa-plus"></i> Restock</button>
+                          <button class="btn btn-info text-white btn-sm" title="Edit Kemasan"
+                            onclick="toggleEditForm(<?= intval($kem['id']) ?>)"><i class="fa fa-pencil"></i> Edit</button>
                           <a href="<?= wp_nonce_url('?page=' . esc_attr($obj->plugin_slug . $obj->menu_slug) . '&hapus-kemasan&id_kemasan=' . intval($kem['id']) . '&id_bahan=' . intval($data['id']), 'sl_hapus_kemasan_' . intval($kem['id'])); ?>"
                             onclick="return confirm('Yakin ingin menghapus kemasan ini? Riwayat logbook yang terkait kemasan ini akan bermasalah jika ada.')"
                             class="btn btn-danger btn-sm" title="Hapus Kemasan"><i class="fa fa-trash"></i></a>
@@ -303,6 +319,47 @@ if (!is_user_logged_in()) {
                             <div class="col-md-4 d-flex align-items-end">
                               <button type="submit" name="restock-kemasan" class="btn btn-success btn-sm me-2"><i class="fa fa-save"></i> Update</button>
                               <button type="button" class="btn btn-secondary btn-sm" onclick="toggleRestockForm(<?= intval($kem['id']) ?>)">Batal</button>
+                            </div>
+                          </form>
+                        </td>
+                      </tr>
+                      <tr id="edit-form-<?= intval($kem['id']) ?>" style="display:none;">
+                        <td colspan="6">
+                          <form method="post" class="row g-2">
+                            <?php wp_nonce_field('sl_edit_kemasan_action', '_wpnonce'); ?>
+                            <input type="hidden" name="id_kemasan" value="<?= intval($kem['id']) ?>">
+                            <input type="hidden" name="id_bahan" value="<?= intval($data['id']) ?>">
+                            <div class="col-md-3">
+                              <label class="form-label small fw-bold">Label Kemasan</label>
+                              <input type="text" name="label_kemasan" class="form-control form-control-sm" value="<?= esc_attr($kem['label_kemasan']) ?>" required>
+                            </div>
+                            <div class="col-md-2">
+                              <label class="form-label small fw-bold">Kapasitas Awal</label>
+                              <input type="number" step="any" name="kapasitas_awal" class="form-control form-control-sm" value="<?= esc_attr($kem['kapasitas_awal']) ?>" required>
+                            </div>
+                            <div class="col-md-2">
+                              <label class="form-label small fw-bold">Stok Tersedia</label>
+                              <input type="number" step="any" name="jumlah_tersedia" class="form-control form-control-sm" value="<?= esc_attr($kem['jumlah_tersedia']) ?>" required>
+                            </div>
+                            <div class="col-md-1">
+                              <label class="form-label small fw-bold">Satuan</label>
+                              <input type="text" name="satuan" class="form-control form-control-sm" value="<?= esc_attr($kem['satuan']) ?>" required>
+                            </div>
+                            <div class="col-md-2">
+                              <label class="form-label small fw-bold">Kadaluwarsa</label>
+                              <input type="date" name="exp_date" class="form-control form-control-sm" value="<?= esc_attr($kem['exp_date']) ?>">
+                            </div>
+                            <div class="col-md-2">
+                              <label class="form-label small fw-bold">Letak</label>
+                              <input type="text" name="letak" class="form-control form-control-sm" value="<?= esc_attr($kem['letak']) ?>">
+                            </div>
+                            <div class="col-md-9 mt-2">
+                              <label class="form-label small fw-bold">Catatan Kondisi</label>
+                              <input type="text" name="catatan_kondisi" class="form-control form-control-sm" value="<?= esc_attr($kem['catatan_kondisi']) ?>">
+                            </div>
+                            <div class="col-md-3 mt-2 d-flex align-items-end justify-content-end">
+                              <button type="submit" name="edit-kemasan" class="btn btn-primary btn-sm me-2"><i class="fa fa-save"></i> Simpan</button>
+                              <button type="button" class="btn btn-secondary btn-sm" onclick="toggleEditForm(<?= intval($kem['id']) ?>)">Batal</button>
                             </div>
                           </form>
                         </td>
@@ -350,6 +407,14 @@ if (!is_user_logged_in()) {
     <script type="text/javascript">
       function toggleRestockForm(id) {
         var form = document.getElementById('restock-form-' + id);
+        if (form.style.display === 'none' || form.style.display === '') {
+          form.style.display = 'table-row';
+        } else {
+          form.style.display = 'none';
+        }
+      }
+      function toggleEditForm(id) {
+        var form = document.getElementById('edit-form-' + id);
         if (form.style.display === 'none' || form.style.display === '') {
           form.style.display = 'table-row';
         } else {

@@ -194,4 +194,29 @@ class SL_SIMLAB_BahanClass extends SL_SimlabPlugin
     $query = $this->db->prepare("UPDATE {$table} SET jumlah_tersedia = %f, is_empty = %d WHERE id = %d", $Jumlah, $is_empty, $id_kemasan);
     return $this->db->query($query);
   }
+
+  // ubah kemasan
+  public function ubahKemasan($data)
+  {
+    $table = $this->db->prefix . 'sl_simlab_bahan_kemasan';
+    $id_kemasan = intval($data['id_kemasan']);
+
+    $jumlah_tersedia = floatval(str_replace(',', '.', $data['jumlah_tersedia'] ?? 0));
+    $is_empty = ($jumlah_tersedia <= 0) ? 1 : 0;
+
+    $values = array(
+      'label_kemasan'   => sanitize_text_field($data['label_kemasan'] ?? ''),
+      'kapasitas_awal'  => floatval(str_replace(',', '.', $data['kapasitas_awal'] ?? 0)),
+      'jumlah_tersedia' => $jumlah_tersedia,
+      'satuan'          => sanitize_text_field($data['satuan'] ?? ''),
+      'exp_date'        => (!empty($data['exp_date'])) ? sanitize_text_field($data['exp_date']) : null,
+      'letak'           => sanitize_text_field($data['letak'] ?? ''),
+      'catatan_kondisi' => sanitize_text_field($data['catatan_kondisi'] ?? ''),
+      'is_empty'        => $is_empty
+    );
+    $where = array('id' => $id_kemasan);
+
+    return $this->db->update($table, $values, $where);
+  }
 }
+
