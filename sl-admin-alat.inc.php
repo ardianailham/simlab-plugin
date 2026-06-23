@@ -314,10 +314,58 @@ if (!is_user_logged_in()) {
 
     /* ── LIST (default) ──────────────────────────────────────────────────── */
   } else {
-    $data = $obj->getAlat();
+    $search = isset($_GET['search']) ? sanitize_text_field($_GET['search']) : '';
+    $filter_merk = isset($_GET['filter_merk']) ? sanitize_text_field($_GET['filter_merk']) : '';
+    $filter_stock = isset($_GET['filter_stock']) ? sanitize_text_field($_GET['filter_stock']) : '';
+    $filter = ['merk' => $filter_merk, 'stock_status' => $filter_stock];
+    $brands = $obj->getDistinctBrands();
+
+    $limit = 10;
+    $current_page = isset($_GET['sl_paged']) ? max(1, intval($_GET['sl_paged'])) : 1;
+    $offset = ($current_page - 1) * $limit;
+    $total_items = $obj->getAlatCount($search, $filter);
+    $data = $obj->getAlat($limit, $offset, $search, $filter);
+    $reset_url = esc_url(remove_query_arg(['search', 'filter_merk', 'filter_stock', 'sl_paged']));
     ?>
     <div class="row">
       <div class="col-lg-12">
+        
+        <form method="get" class="row g-2 mb-4 align-items-center bg-white p-3 rounded border shadow-sm mx-0">
+          <?php
+          foreach ($_GET as $key => $val) {
+            if (!in_array($key, ['search', 'filter_merk', 'filter_stock', 'sl_paged'])) {
+              echo '<input type="hidden" name="' . esc_attr($key) . '" value="' . esc_attr($val) . '">';
+            }
+          }
+          ?>
+          <div class="col-md-5">
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0"><i class="fa fa-search text-muted"></i></span>
+              <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Cari nama alat atau merk..." value="<?= esc_attr($search); ?>">
+            </div>
+          </div>
+          <div class="col-md-3">
+            <select name="filter_merk" class="form-select">
+              <option value="">-- Semua Merk --</option>
+              <?php foreach ($brands as $b): ?>
+                <option value="<?= esc_attr($b); ?>" <?= $filter_merk === $b ? 'selected' : ''; ?>><?= esc_html($b); ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <select name="filter_stock" class="form-select">
+              <option value="">-- Semua Stok --</option>
+              <option value="in_stock" <?= $filter_stock === 'in_stock' ? 'selected' : ''; ?>>Tersedia (Stok > 0)</option>
+              <option value="out_of_stock" <?= $filter_stock === 'out_of_stock' ? 'selected' : ''; ?>>Habis (Stok = 0)</option>
+            </select>
+          </div>
+          <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary w-100 py-2"><i class="fa fa-filter"></i> Cari</button>
+            <?php if (!empty($search) || !empty($filter_merk) || !empty($filter_stock)): ?>
+              <a href="<?= $reset_url; ?>" class="btn btn-outline-secondary d-flex align-items-center justify-content-center" title="Reset"><i class="fa fa-refresh"></i></a>
+            <?php endif; ?>
+          </div>
+        </form>
 
         <?php if (SL_SIMLAB_Auth::is_admin()) { ?>
           <div class="d-flex flex-wrap gap-2 mb-4 justify-content-between align-items-center">
@@ -388,7 +436,7 @@ if (!is_user_logged_in()) {
               </tr>
             </thead>
             <tbody>
-              <?php $i = 1; ?>
+              <?php $i = $offset + 1; ?>
               <?php if (empty($data)): ?>
                 <tr>
                   <td colspan="5" class="text-center py-4 text-muted">Belum ada data alat.</td>
@@ -425,6 +473,7 @@ if (!is_user_logged_in()) {
             </tbody>
           </table>
         </div>
+        <?php SL_SimlabPlugin::renderPagination($total_items, $limit, $current_page); ?>
 
       </div>
     </div>

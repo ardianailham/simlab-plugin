@@ -23,19 +23,101 @@ class SL_SIMLAB_BahanClass extends SL_SimlabPlugin
   }
 
   // query Bahan from database
-  public function getBahan()
+  public function getBahan($limit = 0, $offset = 0, $search = '', $filter = [])
   {
     $t_bahan = $this->db->prefix . $this->table;
     $t_kemasan = $this->db->prefix . 'sl_simlab_bahan_kemasan';
+
+    $where_clauses = [];
+    if (!empty($search)) {
+      $search_wildcard = '%' . $this->db->esc_like($search) . '%';
+      $where_clauses[] = $this->db->prepare("(b.Nama_Bahan LIKE %s OR b.Alias LIKE %s OR b.Merk LIKE %s)", $search_wildcard, $search_wildcard, $search_wildcard);
+    }
+    if (!empty($filter['kategori'])) {
+      $where_clauses[] = $this->db->prepare("b.Kategori = %s", $filter['kategori']);
+    }
+
+    $where = '';
+    if (!empty($where_clauses)) {
+      $where = ' WHERE ' . implode(' AND ', $where_clauses);
+    }
+
+    $having = '';
+    if (!empty($filter['stock_status'])) {
+      if ($filter['stock_status'] === 'in_stock') {
+        $having = " HAVING StokTotal > 0";
+      } elseif ($filter['stock_status'] === 'out_of_stock') {
+        $having = " HAVING StokTotal = 0";
+      }
+    }
 
     $query = "SELECT b.id, b.Nama_Bahan, b.Alias, b.Kategori, b.Merk, b.Satuan_Dasar, b.ghs_code, b.hazard_statement, b.signal_word, b.created_at, 
               IFNULL(SUM(k.jumlah_tersedia), 0) as StokTotal,
               IFNULL(SUM(k.kapasitas_awal), 0) as KapasitasMax 
               FROM {$t_bahan} b 
               LEFT JOIN {$t_kemasan} k ON b.id = k.id_bahan 
-              GROUP BY b.id";
+              {$where}
+              GROUP BY b.id
+              {$having}";
+
+    if ($limit > 0) {
+      $query .= $this->db->prepare(" LIMIT %d OFFSET %d", $limit, $offset);
+    }
     $results = $this->db->get_results($query, ARRAY_A);
     return $results;
+  }
+
+  // count total Bahan
+  public function getBahanCount($search = '', $filter = [])
+  {
+    $t_bahan = $this->db->prefix . $this->table;
+    $t_kemasan = $this->db->prefix . 'sl_simlab_bahan_kemasan';
+
+    $where_clauses = [];
+    if (!empty($search)) {
+      $search_wildcard = '%' . $this->db->esc_like($search) . '%';
+      $where_clauses[] = $this->db->prepare("(b.Nama_Bahan LIKE %s OR b.Alias LIKE %s OR b.Merk LIKE %s)", $search_wildcard, $search_wildcard, $search_wildcard);
+    }
+    if (!empty($filter['kategori'])) {
+      $where_clauses[] = $this->db->prepare("b.Kategori = %s", $filter['kategori']);
+    }
+
+    $where = '';
+    if (!empty($where_clauses)) {
+      $where = ' WHERE ' . implode(' AND ', $where_clauses);
+    }
+
+    $having = '';
+    if (!empty($filter['stock_status'])) {
+      if ($filter['stock_status'] === 'in_stock') {
+        $having = " HAVING StokTotal > 0";
+      } elseif ($filter['stock_status'] === 'out_of_stock') {
+        $having = " HAVING StokTotal = 0";
+      }
+    }
+
+    if (empty($having)) {
+      $query = "SELECT COUNT(*) FROM {$t_bahan} b {$where}";
+      return intval($this->db->get_var($query));
+    } else {
+      $query = "SELECT COUNT(StokTotal) FROM (
+                  SELECT IFNULL(SUM(k.jumlah_tersedia), 0) as StokTotal
+                  FROM {$t_bahan} b 
+                  LEFT JOIN {$t_kemasan} k ON b.id = k.id_bahan 
+                  {$where}
+                  GROUP BY b.id
+                  {$having}
+                ) as temp_table";
+      return intval($this->db->get_var($query));
+    }
+  }
+
+  // get distinct categories
+  public function getDistinctCategories()
+  {
+    $t_bahan = $this->db->prefix . $this->table;
+    $query = "SELECT DISTINCT Kategori FROM {$t_bahan} WHERE Kategori != '' AND Kategori IS NOT NULL ORDER BY Kategori ASC";
+    return $this->db->get_col($query);
   }
 
   // query Bahan from database berdasar id

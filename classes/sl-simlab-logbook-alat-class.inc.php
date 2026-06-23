@@ -20,15 +20,75 @@ class SL_SIMLAB_LogbookAlatClass extends SL_SimlabPlugin
     return ob_get_clean();
   }
 
-  public function getLogAlat()
+  public function getLogAlat($limit = 0, $offset = 0, $search = '', $filter = [])
   {
     $table1 = $this->db->prefix . $this->table;
     $table2 = $this->db->prefix . 'sl_simlab_alat';
     $table3 = $this->db->prefix . 'sl_simlab_status';
-    $query = "SELECT " . $table1 . ".id, " . $table1 . ".qty, " . $table1 . ".user_id, " . $table1 . ".start_date, " . $table1 . ".end_date, " . $table2 . ".Nama_Alat, " . $table3 . ".name FROM ((" . $table1 . " INNER JOIN " . $table2 . " ON " . $table1 . ".id_alat=" . $table2 . ".id) INNER JOIN " . $table3 . " ON " . $table1 . ".status=" . $table3 . ".id)";
+    $table_users = $this->db->users;
+
+    $where_clauses = [];
+    if (!empty($search)) {
+      $search_wildcard = '%' . $this->db->esc_like($search) . '%';
+      $where_clauses[] = $this->db->prepare("(a.Nama_Alat LIKE %s OR u.display_name LIKE %s OR u.user_login LIKE %s)", $search_wildcard, $search_wildcard, $search_wildcard);
+    }
+    if (!empty($filter['status'])) {
+      $where_clauses[] = $this->db->prepare("l.status = %d", $filter['status']);
+    }
+
+    $where = '';
+    if (!empty($where_clauses)) {
+      $where = ' WHERE ' . implode(' AND ', $where_clauses);
+    }
+
+    $query = "SELECT l.id, l.qty, l.user_id, l.start_date, l.end_date, a.Nama_Alat, s.name 
+              FROM {$table1} l 
+              INNER JOIN {$table2} a ON l.id_alat = a.id 
+              INNER JOIN {$table3} s ON l.status = s.id
+              INNER JOIN {$table_users} u ON l.user_id = u.ID
+              {$where}
+              ORDER BY l.start_date DESC";
+
+    if ($limit > 0) {
+      $query .= $this->db->prepare(" LIMIT %d OFFSET %d", $limit, $offset);
+    }
     $results = $this->db->get_results($query, ARRAY_A);
     return $results;
-    // return $query;
+  }
+
+  public function getLogAlatCount($search = '', $filter = [])
+  {
+    $table1 = $this->db->prefix . $this->table;
+    $table2 = $this->db->prefix . 'sl_simlab_alat';
+    $table_users = $this->db->users;
+
+    $where_clauses = [];
+    if (!empty($search)) {
+      $search_wildcard = '%' . $this->db->esc_like($search) . '%';
+      $where_clauses[] = $this->db->prepare("(a.Nama_Alat LIKE %s OR u.display_name LIKE %s OR u.user_login LIKE %s)", $search_wildcard, $search_wildcard, $search_wildcard);
+    }
+    if (!empty($filter['status'])) {
+      $where_clauses[] = $this->db->prepare("l.status = %d", $filter['status']);
+    }
+
+    $where = '';
+    if (!empty($where_clauses)) {
+      $where = ' WHERE ' . implode(' AND ', $where_clauses);
+    }
+
+    $query = "SELECT COUNT(*) 
+              FROM {$table1} l 
+              INNER JOIN {$table2} a ON l.id_alat = a.id 
+              INNER JOIN {$table_users} u ON l.user_id = u.ID
+              {$where}";
+    return intval($this->db->get_var($query));
+  }
+
+  public function getDistinctStatuses()
+  {
+    $table = $this->db->prefix . 'sl_simlab_status';
+    $query = "SELECT id, name FROM {$table} ORDER BY id ASC";
+    return $this->db->get_results($query, ARRAY_A);
   }
 
   public function getLogAlatById($id)

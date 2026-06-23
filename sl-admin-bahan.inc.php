@@ -301,7 +301,7 @@ if (!is_user_logged_in()) {
                             onclick="toggleEditForm(<?= intval($kem['id']) ?>)"><i class="fa fa-pencil"></i> Edit</button>
                           <a href="<?= wp_nonce_url('?page=' . esc_attr($obj->plugin_slug . $obj->menu_slug) . '&hapus-kemasan&id_kemasan=' . intval($kem['id']) . '&id_bahan=' . intval($data['id']), 'sl_hapus_kemasan_' . intval($kem['id'])); ?>"
                             onclick="return confirm('Yakin ingin menghapus kemasan ini? Riwayat logbook yang terkait kemasan ini akan bermasalah jika ada.')"
-                            class="btn btn-danger btn-sm" title="Hapus Kemasan"><i class="fa fa-trash"></i></a>
+                            class="btn btn-danger btn-sm" title="Hapus Kemasan"><i class="fa fa-trash"></i> Delete</a>
                         </td>
                       <?php endif; ?>
                     </tr>
@@ -628,10 +628,58 @@ if (!is_user_logged_in()) {
 
     /* ── LIST (default) ──────────────────────────────────────────────────── */
   } else {
-    $data = $obj->getBahan();
+    $search = isset($_GET['search']) ? sanitize_text_field($_GET['search']) : '';
+    $filter_kategori = isset($_GET['filter_kategori']) ? sanitize_text_field($_GET['filter_kategori']) : '';
+    $filter_stock = isset($_GET['filter_stock']) ? sanitize_text_field($_GET['filter_stock']) : '';
+    $filter = ['kategori' => $filter_kategori, 'stock_status' => $filter_stock];
+    $categories = $obj->getDistinctCategories();
+
+    $limit = 10;
+    $current_page = isset($_GET['sl_paged']) ? max(1, intval($_GET['sl_paged'])) : 1;
+    $offset = ($current_page - 1) * $limit;
+    $total_items = $obj->getBahanCount($search, $filter);
+    $data = $obj->getBahan($limit, $offset, $search, $filter);
+    $reset_url = esc_url(remove_query_arg(['search', 'filter_kategori', 'filter_stock', 'sl_paged']));
   ?>
     <div class="row">
       <div class="col-lg-12">
+        
+        <form method="get" class="row g-2 mb-4 align-items-center bg-white p-3 rounded border shadow-sm mx-0">
+          <?php
+          foreach ($_GET as $key => $val) {
+            if (!in_array($key, ['search', 'filter_kategori', 'filter_stock', 'sl_paged'])) {
+              echo '<input type="hidden" name="' . esc_attr($key) . '" value="' . esc_attr($val) . '">';
+            }
+          }
+          ?>
+          <div class="col-md-5">
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0"><i class="fa fa-search text-muted"></i></span>
+              <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Cari nama bahan, alias, merk..." value="<?= esc_attr($search); ?>">
+            </div>
+          </div>
+          <div class="col-md-3">
+            <select name="filter_kategori" class="form-select">
+              <option value="">-- Semua Kategori --</option>
+              <?php foreach ($categories as $cat): ?>
+                <option value="<?= esc_attr($cat); ?>" <?= $filter_kategori === $cat ? 'selected' : ''; ?>><?= esc_html($cat); ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <select name="filter_stock" class="form-select">
+              <option value="">-- Semua Stok --</option>
+              <option value="in_stock" <?= $filter_stock === 'in_stock' ? 'selected' : ''; ?>>Tersedia</option>
+              <option value="out_of_stock" <?= $filter_stock === 'out_of_stock' ? 'selected' : ''; ?>>Habis</option>
+            </select>
+          </div>
+          <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary w-100 py-2"><i class="fa fa-filter"></i> Cari</button>
+            <?php if (!empty($search) || !empty($filter_kategori) || !empty($filter_stock)): ?>
+              <a href="<?= $reset_url; ?>" class="btn btn-outline-secondary d-flex align-items-center justify-content-center" title="Reset"><i class="fa fa-refresh"></i></a>
+            <?php endif; ?>
+          </div>
+        </form>
 
         <?php if (SL_SIMLAB_Auth::is_admin()) { ?>
           <div class="d-flex flex-wrap gap-2 mb-4 justify-content-between align-items-center">
@@ -745,7 +793,7 @@ if (!is_user_logged_in()) {
               </tr>
             </thead>
             <tbody>
-              <?php $i = 1; ?>
+              <?php $i = $offset + 1; ?>
               <?php if (empty($data)): ?>
                 <tr>
                   <td colspan="6" class="text-center py-4 text-muted">Belum ada data bahan.</td>
@@ -796,6 +844,7 @@ if (!is_user_logged_in()) {
             </tbody>
           </table>
         </div>
+        <?php SL_SimlabPlugin::renderPagination($total_items, $limit, $current_page); ?>
 
       </div>
     </div>

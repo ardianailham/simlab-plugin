@@ -6,7 +6,7 @@
  * Author: Ardiana Ilham Nurrohman
  * Author URI: https://github.com/ardianailham
  * Version: 1.1.0
- * Requires: 6.4
+ * Requires at least: 6.4
  * Tested: 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 7.0
  * Requires PHP: 7.4
  * Tested PHP: 7.4, 8.0, 8.1, 8.2, 8.3
@@ -142,8 +142,10 @@ function sl_simlab_styles()
   wp_enqueue_style('sl_simlab_bootstrap');
   wp_register_style('sl_simlab_css', SL_SIMLAB_PATH . '/css/simlab.css');
   wp_enqueue_style('sl_simlab_css');
-  wp_register_style('sl_simlab_icon', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css');
+  wp_register_style('sl_simlab_icon', SL_SIMLAB_PATH . '/assets/fontawesome/css/all.min.css');
   wp_enqueue_style('sl_simlab_icon');
+  wp_register_style('sl_simlab_icon_shims', SL_SIMLAB_PATH . '/assets/fontawesome/css/v4-shims.min.css', array('sl_simlab_icon'));
+  wp_enqueue_style('sl_simlab_icon_shims');
 }
 
 

@@ -53,10 +53,50 @@ if (isset($_GET['hapus'])) {
 <?php
 /* ── LIST (default) ──────────────────────────────────────────────────────── */
 } else {
-  $data = $obj->getLogBahan();
+  $search = isset($_GET['search']) ? sanitize_text_field($_GET['search']) : '';
+  $filter_tujuan = isset($_GET['filter_tujuan']) ? sanitize_text_field($_GET['filter_tujuan']) : '';
+  $filter = ['tujuan' => $filter_tujuan];
+  $tujuans = $obj->getDistinctTujuan();
+
+  $limit = 10;
+  $current_page = isset($_GET['sl_paged']) ? max(1, intval($_GET['sl_paged'])) : 1;
+  $offset = ($current_page - 1) * $limit;
+  $total_items = $obj->getLogBahanCount($search, $filter);
+  $data = $obj->getLogBahan($limit, $offset, $search, $filter);
+  $reset_url = esc_url(remove_query_arg(['search', 'filter_tujuan', 'sl_paged']));
 ?>
   <div class="row">
     <div class="col-lg-12">
+      
+      <form method="get" class="row g-2 mb-4 align-items-center bg-white p-3 rounded border shadow-sm mx-0">
+        <?php
+        foreach ($_GET as $key => $val) {
+          if (!in_array($key, ['search', 'filter_tujuan', 'sl_paged'])) {
+            echo '<input type="hidden" name="' . esc_attr($key) . '" value="' . esc_attr($val) . '">';
+          }
+        }
+        ?>
+        <div class="col-md-6">
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0"><i class="fa fa-search text-muted"></i></span>
+            <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Cari nama bahan, pengguna, tujuan..." value="<?= esc_attr($search); ?>">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <select name="filter_tujuan" class="form-select">
+            <option value="">-- Semua Tujuan/Keperluan --</option>
+            <?php foreach ($tujuans as $tj): ?>
+              <option value="<?= esc_attr($tj); ?>" <?= $filter_tujuan === $tj ? 'selected' : ''; ?>><?= esc_html($tj); ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+          <button type="submit" class="btn btn-primary w-100 py-2"><i class="fa fa-filter"></i> Cari</button>
+          <?php if (!empty($search) || !empty($filter_tujuan)): ?>
+            <a href="<?= $reset_url; ?>" class="btn btn-outline-secondary d-flex align-items-center justify-content-center" title="Reset"><i class="fa fa-refresh"></i></a>
+          <?php endif; ?>
+        </div>
+      </form>
       <div class="table-responsive">
         <table class="table table-hover align-middle border">
           <thead class="table-light">
@@ -70,7 +110,7 @@ if (isset($_GET['hapus'])) {
             </tr>
           </thead>
           <tbody>
-            <?php $i = 1; ?>
+            <?php $i = $offset + 1; ?>
             <?php if (empty($data)): ?>
               <tr><td colspan="6" class="text-center py-4 text-muted">Belum ada riwayat penggunaan bahan.</td></tr>
             <?php endif; ?>
@@ -100,6 +140,7 @@ if (isset($_GET['hapus'])) {
           </tbody>
         </table>
       </div>
+      <?php SL_SimlabPlugin::renderPagination($total_items, $limit, $current_page); ?>
     </div>
   </div>
 

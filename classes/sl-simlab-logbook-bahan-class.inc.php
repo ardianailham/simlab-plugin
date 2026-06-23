@@ -22,18 +22,76 @@ class SL_SIMLAB_LogbookBahanClass extends SL_SimlabPlugin
     return ob_get_clean();
   }
 
-  public function getLogBahan()
+  public function getLogBahan($limit = 0, $offset = 0, $search = '', $filter = [])
   {
     $table1 = $this->db->prefix . $this->table;
     $table_kemasan = $this->db->prefix . 'sl_simlab_bahan_kemasan';
     $table2 = $this->db->prefix . 'sl_simlab_bahan';
+    $table_users = $this->db->users;
+
+    $where_clauses = [];
+    if (!empty($search)) {
+      $search_wildcard = '%' . $this->db->esc_like($search) . '%';
+      $where_clauses[] = $this->db->prepare("(b.Nama_Bahan LIKE %s OR u.display_name LIKE %s OR u.user_login LIKE %s OR l.tujuan LIKE %s)", $search_wildcard, $search_wildcard, $search_wildcard, $search_wildcard);
+    }
+    if (!empty($filter['tujuan'])) {
+      $where_clauses[] = $this->db->prepare("l.tujuan = %s", $filter['tujuan']);
+    }
+
+    $where = '';
+    if (!empty($where_clauses)) {
+      $where = ' WHERE ' . implode(' AND ', $where_clauses);
+    }
 
     $query = "SELECT l.id, l.qty, l.user_id, l.date, b.Nama_Bahan, b.Satuan_Dasar, k.label_kemasan, k.satuan
               FROM {$table1} l 
               INNER JOIN {$table_kemasan} k ON l.id_kemasan = k.id 
-              INNER JOIN {$table2} b ON k.id_bahan = b.id ORDER BY l.date DESC";
+              INNER JOIN {$table2} b ON k.id_bahan = b.id 
+              INNER JOIN {$table_users} u ON l.user_id = u.ID
+              {$where}
+              ORDER BY l.date DESC";
+    if ($limit > 0) {
+      $query .= $this->db->prepare(" LIMIT %d OFFSET %d", $limit, $offset);
+    }
     $results = $this->db->get_results($query, ARRAY_A);
     return $results;
+  }
+
+  public function getLogBahanCount($search = '', $filter = [])
+  {
+    $table1 = $this->db->prefix . $this->table;
+    $table_kemasan = $this->db->prefix . 'sl_simlab_bahan_kemasan';
+    $table2 = $this->db->prefix . 'sl_simlab_bahan';
+    $table_users = $this->db->users;
+
+    $where_clauses = [];
+    if (!empty($search)) {
+      $search_wildcard = '%' . $this->db->esc_like($search) . '%';
+      $where_clauses[] = $this->db->prepare("(b.Nama_Bahan LIKE %s OR u.display_name LIKE %s OR u.user_login LIKE %s OR l.tujuan LIKE %s)", $search_wildcard, $search_wildcard, $search_wildcard, $search_wildcard);
+    }
+    if (!empty($filter['tujuan'])) {
+      $where_clauses[] = $this->db->prepare("l.tujuan = %s", $filter['tujuan']);
+    }
+
+    $where = '';
+    if (!empty($where_clauses)) {
+      $where = ' WHERE ' . implode(' AND ', $where_clauses);
+    }
+
+    $query = "SELECT COUNT(*) 
+              FROM {$table1} l 
+              INNER JOIN {$table_kemasan} k ON l.id_kemasan = k.id 
+              INNER JOIN {$table2} b ON k.id_bahan = b.id 
+              INNER JOIN {$table_users} u ON l.user_id = u.ID
+              {$where}";
+    return intval($this->db->get_var($query));
+  }
+
+  public function getDistinctTujuan()
+  {
+    $table1 = $this->db->prefix . $this->table;
+    $query = "SELECT DISTINCT tujuan FROM {$table1} WHERE tujuan != '' AND tujuan IS NOT NULL ORDER BY tujuan ASC";
+    return $this->db->get_col($query);
   }
 
   public function getLogBahanById($id)

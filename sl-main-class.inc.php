@@ -43,11 +43,19 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
 
     $link_alat = !empty($option['daftar-alat']) ? esc_url($option['daftar-alat']) : '#';
     $link_bahan = !empty($option['daftar-bahan']) ? esc_url($option['daftar-bahan']) : '#';
+    $link_log_alat = !empty($option['logbook-alat']) ? esc_url($option['logbook-alat']) : '#';
+    $link_log_bahan = !empty($option['logbook-bahan']) ? esc_url($option['logbook-bahan']) : '#';
     $position_class = 'simlab-pos-' . str_replace('_', '-', $button_position);
 ?>
     <div class="simlab-fixed-button-wrapper <?= esc_attr($position_class) ?>">
-      <a href="<?= $link_alat ?>" id="buttonDaftarAlat" class="simlab-fixed-button" aria-label="Daftar Alat"></a>
-      <a href="<?= $link_bahan ?>" id="buttonDaftarBahan" class="simlab-fixed-button" aria-label="Daftar Bahan"></a>
+      <div class="row">
+        <a href="<?= $link_alat ?>" id="buttonDaftarAlat" class="simlab-fixed-button" aria-label="Daftar Alat"></a>
+        <a href="<?= $link_bahan ?>" id="buttonDaftarBahan" class="simlab-fixed-button" aria-label="Daftar Bahan"></a>
+      </div>
+      <div class="row">
+        <a href="<?= $link_log_alat ?>" id="buttonLogAlat" class="simlab-fixed-button" aria-label="Logbook Alat"></a>
+        <a href="<?= $link_log_bahan ?>" id="buttonLogBahan" class="simlab-fixed-button" aria-label="Logbook Bahan"></a>
+      </div>
     </div>
   <?php
   }
@@ -259,8 +267,8 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
           <?php
         }
 
-        public static function admin_footer()
-        {
+  public static function admin_footer()
+  {
           ?>
           </div>
         </div>
@@ -276,6 +284,7 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
     <style>
       .simlab-admin-wrapper {
         font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        max-width: 100% !important;
       }
 
       .bg-primary {
@@ -331,5 +340,71 @@ class SL_SimlabPlugin extends SL_SIMLAB_BaseClass
       }
     </style>
 <?php
-        }
-      }
+  }
+
+  public static function renderPagination($total_items, $limit, $current_page)
+  {
+    $total_pages = ceil($total_items / $limit);
+    if ($total_pages <= 1) {
+      return;
+    }
+    ?>
+    <nav aria-label="Page navigation" class="mt-4">
+      <ul class="pagination justify-content-center">
+        <?php if ($current_page > 1): ?>
+          <li class="page-item">
+            <a class="page-link" href="<?php echo esc_url(add_query_arg('sl_paged', $current_page - 1)); ?>" aria-label="Previous">
+              <span aria-hidden="true">&laquo; Prev</span>
+            </a>
+          </li>
+        <?php else: ?>
+          <li class="page-item disabled">
+            <span class="page-link">&laquo; Prev</span>
+          </li>
+        <?php endif; ?>
+
+        <?php
+        $start_page = max(1, $current_page - 2);
+        $end_page = min($total_pages, $current_page + 2);
+        
+        if ($start_page > 1): ?>
+          <li class="page-item"><a class="page-link" href="<?php echo esc_url(add_query_arg('sl_paged', 1)); ?>">1</a></li>
+          <?php if ($start_page > 2): ?>
+            <li class="page-item disabled"><span class="page-link">...</span></li>
+          <?php endif; ?>
+        <?php endif; ?>
+
+        <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
+          <li class="page-item <?php echo $i === $current_page ? 'active' : ''; ?>">
+            <?php if ($i === $current_page): ?>
+              <span class="page-link"><?php echo $i; ?></span>
+            <?php else: ?>
+              <a class="page-link" href="<?php echo esc_url(add_query_arg('sl_paged', $i)); ?>"><?php echo $i; ?></a>
+            <?php endif; ?>
+          </li>
+        <?php endfor; ?>
+
+        <?php if ($end_page < $total_pages): ?>
+          <?php if ($end_page < $total_pages - 1): ?>
+            <li class="page-item disabled"><span class="page-link">...</span></li>
+          <?php endif; ?>
+          <li class="page-item"><a class="page-link" href="<?php echo esc_url(add_query_arg('sl_paged', $total_pages)); ?>"><?php echo $total_pages; ?></a></li>
+        <?php endif; ?>
+
+        <?php if ($current_page < $total_pages): ?>
+          <li class="page-item">
+            <a class="page-link" href="<?php echo esc_url(add_query_arg('sl_paged', $current_page + 1)); ?>" aria-label="Next">
+              <span aria-hidden="true">Next &raquo;</span>
+            </a>
+          </li>
+        <?php else: ?>
+          <li class="page-item disabled">
+            <span class="page-link">Next &raquo;</span>
+          </li>
+        <?php endif; ?>
+      </ul>
+    </nav>
+    <?php
+  }
+}
+

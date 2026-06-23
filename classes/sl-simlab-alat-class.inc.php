@@ -22,12 +22,70 @@ class SL_SIMLAB_AlatClass extends SL_SimlabPlugin
   }
 
   // query alat from database
-  public function getAlat()
+  public function getAlat($limit = 0, $offset = 0, $search = '', $filter = [])
   {
+    $where_clauses = [];
+    if (!empty($search)) {
+      $search_wildcard = '%' . $this->db->esc_like($search) . '%';
+      $where_clauses[] = $this->db->prepare("(Nama_Alat LIKE %s OR Merk LIKE %s)", $search_wildcard, $search_wildcard);
+    }
+    if (!empty($filter['merk'])) {
+      $where_clauses[] = $this->db->prepare("Merk = %s", $filter['merk']);
+    }
+    if (!empty($filter['stock_status'])) {
+      if ($filter['stock_status'] === 'in_stock') {
+        $where_clauses[] = "Qty > 0";
+      } elseif ($filter['stock_status'] === 'out_of_stock') {
+        $where_clauses[] = "Qty = 0";
+      }
+    }
 
-    $query = 'SELECT * FROM ' . $this->db->prefix . $this->table;
+    $where = '';
+    if (!empty($where_clauses)) {
+      $where = ' WHERE ' . implode(' AND ', $where_clauses);
+    }
+
+    $query = 'SELECT * FROM ' . $this->db->prefix . $this->table . $where;
+    if ($limit > 0) {
+      $query .= $this->db->prepare(" LIMIT %d OFFSET %d", $limit, $offset);
+    }
     $results = $this->db->get_results($query, ARRAY_A);
     return $results;
+  }
+
+  // count total alat
+  public function getAlatCount($search = '', $filter = [])
+  {
+    $where_clauses = [];
+    if (!empty($search)) {
+      $search_wildcard = '%' . $this->db->esc_like($search) . '%';
+      $where_clauses[] = $this->db->prepare("(Nama_Alat LIKE %s OR Merk LIKE %s)", $search_wildcard, $search_wildcard);
+    }
+    if (!empty($filter['merk'])) {
+      $where_clauses[] = $this->db->prepare("Merk = %s", $filter['merk']);
+    }
+    if (!empty($filter['stock_status'])) {
+      if ($filter['stock_status'] === 'in_stock') {
+        $where_clauses[] = "Qty > 0";
+      } elseif ($filter['stock_status'] === 'out_of_stock') {
+        $where_clauses[] = "Qty = 0";
+      }
+    }
+
+    $where = '';
+    if (!empty($where_clauses)) {
+      $where = ' WHERE ' . implode(' AND ', $where_clauses);
+    }
+
+    $query = 'SELECT COUNT(*) FROM ' . $this->db->prefix . $this->table . $where;
+    return intval($this->db->get_var($query));
+  }
+
+  // get distinct brands
+  public function getDistinctBrands()
+  {
+    $query = "SELECT DISTINCT Merk FROM " . $this->db->prefix . $this->table . " WHERE Merk != '' AND Merk IS NOT NULL ORDER BY Merk ASC";
+    return $this->db->get_col($query);
   }
   // query alat from database berdasar id
   public function getAlatById($id)

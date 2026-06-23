@@ -73,12 +73,24 @@ if (isset($_GET['hapus'])) {
   <?php
   /* ── LIST (default) ──────────────────────────────────────────────────────── */
 } else {
-  $data = $obj->getLogAlat();
+  $search = isset($_GET['search']) ? sanitize_text_field($_GET['search']) : '';
+  $filter_status = isset($_GET['filter_status']) ? sanitize_text_field($_GET['filter_status']) : '';
+  $filter = ['status' => $filter_status];
+  $statuses = $obj->getDistinctStatuses();
+
+  $active_view = (isset($_GET['sl_paged']) || !empty($search) || !empty($filter_status)) ? 'list' : 'calendar';
+  $all_data = $obj->getLogAlat(0, 0, $search, $filter);
+  $limit = 10;
+  $current_page = isset($_GET['sl_paged']) ? max(1, intval($_GET['sl_paged'])) : 1;
+  $offset = ($current_page - 1) * $limit;
+  $total_items = $obj->getLogAlatCount($search, $filter);
+  $paginated_data = $obj->getLogAlat($limit, $offset, $search, $filter);
   $wp_tz = wp_timezone();
+  $reset_url = esc_url(remove_query_arg(['search', 'filter_status', 'sl_paged']));
 
   // Format data for FullCalendar
   $events = [];
-  foreach ($data as $booking) {
+  foreach ($all_data as $booking) {
     $user_data = get_userdata($booking['user_id']);
     $user_name = $user_data ? $user_data->display_name : 'Unknown';
 
@@ -117,9 +129,9 @@ if (isset($_GET['hapus'])) {
 
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div class="btn-group shadow-sm" role="group">
-      <button type="button" class="btn btn-primary active" id="view-calendar-btn" onclick="switchView('calendar')"><i
+      <button type="button" class="btn <?php echo $active_view === 'calendar' ? 'btn-primary active' : 'btn-outline-primary'; ?>" id="view-calendar-btn" onclick="switchView('calendar')"><i
           class="fa fa-calendar me-1"></i> Kalender</button>
-      <button type="button" class="btn btn-outline-primary" id="view-list-btn" onclick="switchView('list')"><i
+      <button type="button" class="btn <?php echo $active_view === 'list' ? 'btn-primary active' : 'btn-outline-primary'; ?>" id="view-list-btn" onclick="switchView('list')"><i
           class="fa fa-list me-1"></i> Daftar</button>
     </div>
     <?php
@@ -131,12 +143,43 @@ if (isset($_GET['hapus'])) {
   </div>
 
   <!-- Calendar View -->
-  <div id="calendar-view" class="bg-white p-3 rounded shadow-sm border">
+  <div id="calendar-view" class="bg-white p-3 rounded shadow-sm border" style="<?php echo $active_view === 'calendar' ? 'display: block;' : 'display: none;'; ?>">
     <div id="calendar"></div>
   </div>
 
   <!-- List View (Hidden by default) -->
-  <div id="list-view" style="display: none;">
+  <div id="list-view" style="<?php echo $active_view === 'list' ? 'display: block;' : 'display: none;'; ?>">
+    
+    <form method="get" class="row g-2 mb-4 align-items-center bg-white p-3 rounded border shadow-sm mx-0">
+      <?php
+      foreach ($_GET as $key => $val) {
+        if (!in_array($key, ['search', 'filter_status', 'sl_paged'])) {
+          echo '<input type="hidden" name="' . esc_attr($key) . '" value="' . esc_attr($val) . '">';
+        }
+      }
+      ?>
+      <div class="col-md-6">
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0"><i class="fa fa-search text-muted"></i></span>
+          <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Cari nama alat atau peminjam..." value="<?= esc_attr($search); ?>">
+        </div>
+      </div>
+      <div class="col-md-4">
+        <select name="filter_status" class="form-select">
+          <option value="">-- Semua Status --</option>
+          <?php foreach ($statuses as $stat): ?>
+            <option value="<?= esc_attr($stat['id']); ?>" <?= $filter_status == $stat['id'] ? 'selected' : ''; ?>><?= esc_html($stat['name']); ?></option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+      <div class="col-md-2 d-flex gap-2">
+        <button type="submit" class="btn btn-primary w-100 py-2"><i class="fa fa-filter"></i> Cari</button>
+        <?php if (!empty($search) || !empty($filter_status)): ?>
+          <a href="<?= $reset_url; ?>" class="btn btn-outline-secondary d-flex align-items-center justify-content-center" title="Reset"><i class="fa fa-refresh"></i></a>
+        <?php endif; ?>
+      </div>
+    </form>
+
     <div class="table-responsive">
       <table class="table table-hover align-middle border bg-white">
         <thead class="table-light">
@@ -151,13 +194,13 @@ if (isset($_GET['hapus'])) {
           </tr>
         </thead>
         <tbody>
-          <?php $i = 1; ?>
-          <?php if (empty($data)): ?>
+          <?php $i = $offset + 1; ?>
+          <?php if (empty($paginated_data)): ?>
             <tr>
               <td colspan="7" class="text-center py-4 text-muted">Belum ada riwayat peminjaman.</td>
             </tr>
           <?php endif; ?>
-          <?php foreach ($data as $booking): ?>
+          <?php foreach ($paginated_data as $booking): ?>
             <tr>
               <td><?= $i; ?></td>
               <td class="fw-bold"><?= esc_html($booking['Nama_Alat']); ?></td>
@@ -201,6 +244,7 @@ if (isset($_GET['hapus'])) {
         </tbody>
       </table>
     </div>
+    <?php SL_SimlabPlugin::renderPagination($total_items, $limit, $current_page); ?>
   </div>
 
   <script>
@@ -250,7 +294,9 @@ if (isset($_GET['hapus'])) {
           endTime: '17:00',
         }
       });
-      window.calendar.render();
+      if (document.getElementById('calendar-view').style.display !== 'none') {
+        window.calendar.render();
+      }
     });
   </script>
 
